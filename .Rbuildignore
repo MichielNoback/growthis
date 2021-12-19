@@ -1,0 +1,4 @@
+^renv$
+^renv\.lock$
+^growthis\.Rproj$
+^\.Rproj\.user$
