@@ -7,8 +7,6 @@
 read_varioscan(
   xlsx_file,
   dilutions = c(0.02, 0.01, 0.005, 0.0025, 0.0013, 6e-04, 3e-04, 0),
-  experiments = c("Exp1", "Exp2", "Exp3"),
-  data_series = paste0(rep(experiments, each = 4), "_", c("1", "2", "3", "C")),
   time_interval = 10
 )
 }
@@ -17,13 +15,12 @@ read_varioscan(
 
 \item{dilutions}{the dilutions used in the subsequent rows for dose-response studies}
 
-\item{experiments}{the 3 experiments (will end up as labels in the long format).}
-
 \item{time_interval}{the time interval, in minutes, between each reading}
 }
 \value{
 all data in long format
 }
 \description{
-Reads varioscan data from a given excel file. Assumes data is arranged in 96-well format (8 rows and 12 columns). It also assumes a triplicate experimental setup: 3 curves in triplo, each with a control at the fourth column. If the "General_info" tab does not contain metadata at the correct location, the \code{experiments} argument will be used for the labeling
+Reads varioscan data from a given excel file. Assumes data is arranged in 96-well format (8 rows and 12 columns). It also assumes a triplicate experimental setup: 3 curves in triplo, each with a control at the fourth column. If the "General_info" tab does not contain metadata at the correct location (see below), the \code{experiments} argument will be used for the labeling.
+For increased ease in downstream analysis, the "General_info" tab should contain a block of metadata information starting at cell A28 and ending at cell E31. It should have three rows corresponding to the three growth series. The columns should contain "medium addition" (or title, e.g. anthocyanin X), "Strain" (e.g. K. pneumoniae), Date_extracted (in format day/month/year), and "Medium" (e.g. NB 5x Buffercap pH 6)
 }
