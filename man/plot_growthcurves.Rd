@@ -2,25 +2,24 @@
 % Please edit documentation in R/plot_growthcurves.R
 \name{plot_growthcurves}
 \alias{plot_growthcurves}
-\title{Plots varioscan data in growth curves}
+\title{Plots varioscan data in growth curves.}
 \usage{
-plot_growthcurves(varioscan_data, type = "replicates")
+plot_growthcurves(varioscan_data, type = "ribbon")
 }
 \arguments{
 \item{varioscan_data}{all data in long format}
 
-\item{type}{a character, one of \code{c("replicates", "avg", "limits")}. See details}
+\item{type}{a character, one of \code{c("replicates", "avg", "ribbon")}. See details}
 }
 \description{
-Plots varioscan data in growth curves
+Support currently for three types of visualizations: Only average (line plot), all three replicates separately, and a ribbon plot with the average of the three replicates. In the ribbon plot the lower and upper bounds represent the minimum and maximum values of the replicates.
+The upper panel shows the corrected OD values and the lower panel shows the Control series.
 }
 \details{
-\itemize{
-\item \code{type} The \code{type} parameter can be one of \code{c("replicates", "avg", "limits")}
-\itemize{
-\item \code{replicates} the individual replicates will be displayed
-\item \code{avg} only the average of the three series will be displayed
-\item \code{limits} both average and maximum and minimum will be displayed
-}
+\code{type} The \code{type} parameter can be one of \code{c("replicates", "avg", "limits")} and controls which data will be displayed:
+\describe{
+\item{ribbon}{the average as line and the maximum and minimum as ribbon}
+\item{replicates}{the individual three replicates}
+\item{avg}{only the average of each series}
 }
 }

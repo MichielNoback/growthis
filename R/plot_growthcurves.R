@@ -1,5 +1,6 @@
-
-#' Plots varioscan data in growth curves. Support currently for three types of visualizations: Only average (line plot), all three replicates separately, and a ribbon plot with the average of the three replicates. In the ribbon plot the lower and upper bounds represent the minimum and maximum values of the replicates.
+#' Plots varioscan data in growth curves.
+#'
+#' Support currently for three types of visualizations: Only average (line plot), all three replicates separately, and a ribbon plot with the average of the three replicates. In the ribbon plot the lower and upper bounds represent the minimum and maximum values of the replicates.
 #' The upper panel shows the corrected OD values and the lower panel shows the Control series.
 #'
 #' @param varioscan_data all data in long format
@@ -7,12 +8,13 @@
 #'
 #' @details
 #' \code{type} The `type` parameter can be one of \code{c("replicates", "avg", "limits")} and controls which data will be displayed:
-#' * \code{ribbon} the average as line and the maximum and minimum as ribbon
-#' * \code{replicates} the individual replicates
-#' * \code{avg} only the average of the three series
+#' \describe{
+#'   \item{ribbon}{the average as line and the maximum and minimum as ribbon}
+#'   \item{replicates}{the individual three replicates}
+#'   \item{avg}{only the average of each series}
+#' }
 #'
 #' @md
-
 #' @export
 #'
 plot_growthcurves <- function(varioscan_data,
@@ -127,15 +129,4 @@ extract_legend<-function(a.gplot){
     legend <- tmp$grobs[[leg]]
     return(legend)
 }
-
-##test code
-# load(paste0(here::here(), "/data/varioscan_demo_data.Rdata"))
-# plot_growthcurves(all_data, type = "replicates")
-
-# common_legend <- extract_legend(exp_plot)
-# p3 <- gridExtra::grid.arrange(arrangeGrob(exp_plot + theme(legend.position="none"),
-#                                controls_plot + theme(legend.position="none"),
-#                                nrow=2, heights = c(3, 1)),
-#                    common_legend, nrow=2, heights=c(10, 1))
-
 

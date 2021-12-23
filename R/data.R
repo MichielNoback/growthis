@@ -1,0 +1,22 @@
+#' A dataset from the Varioscan 96-well growth curve reader.
+#'
+#' An example dataset containing growth curves of a 96-well dose-response experiment.
+#' The plate has a 8 rows * 12 columns layout.
+#' The experiment was set up in three blocks of 4 columns each, see picture below.
+#'  \figure{varioscan_layout.png}{options: width=90\%}
+#'
+#' @format A tibble frame with 20,928 rows and 10 variables, in long format
+#' \describe{
+#'   \item{dilution}{the dilution of the extract that was added}
+#'   \item{series}{the series; one of three (each 4 columns)}
+#'   \item{replicate}{the replicate; can be 1/2/3 for raw measurements, C for control (column 4 of each series), 1C/2C/3C for corrected measurements or Avg for the average of 1C/2C/3C}
+#'   \item{OD}{the OD; either raw or corrected}
+#'   \item{duration}{the duration; a lubridate Duration object. Increases in 10m intervals}
+#'   \item{start_date}{a lubridate Date  object.the start date of the experiment}
+#'   \item{strain}{the bacterial strain used in the growth experiment}
+#'   \item{extract}{the extract used for the dilution series}
+#'   \item{date_extracted}{the date when the extract was prepared}
+#'   \item{medium}{the medium used to grow the bacteria}
+#' }
+#'
+"varioscan"
