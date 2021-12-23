@@ -9,7 +9,7 @@ filter_data(
   extracts = "all",
   strains = "all",
   replicates = "all",
-  lower_date = lubridate::today() - 7,
+  lower_date = lubridate::dmy("1-1-2000"),
   upper_date = lubridate::today()
 )
 }
@@ -26,6 +26,9 @@ filter_data(
 
 \item{upper}{Lubridate Date object: the upper date (inclusive) to include, and before. Defaults to the current day.}
 }
+\value{
+filtered data with same columns
+}
 \description{
 General-purpose function to filter Varioscan data in long format on different column values.
 Assumes these columns exist:
@@ -38,8 +41,11 @@ Assumes these columns exist:
 \examples{
 #filter replicates
 filter_data(all_data, replicates = c("1C", "2C"))
+
 # filter replicates and extract
 filter_data(all_data, replicates = c("1C", "2C"), extracts = "Tulip stem")
+
 filter replicates and lower date
 filter_data(all_data, replicates = c("1C", "2C"), lower_date = lubridate::dmy("2-3-2020"))
+
 }

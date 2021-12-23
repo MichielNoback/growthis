@@ -4,13 +4,23 @@
 \alias{plot_growthcurves}
 \title{Plots varioscan data in growth curves}
 \usage{
-plot_growthcurves(varioscan_data, only_average = FALSE)
+plot_growthcurves(varioscan_data, type = "replicates")
 }
 \arguments{
 \item{varioscan_data}{all data in long format}
 
-\item{only_average}{whether only the average of the three series should be displayed}
+\item{type}{a character, one of \code{c("replicates", "avg", "limits")}. See details}
 }
 \description{
 Plots varioscan data in growth curves
+}
+\details{
+\itemize{
+\item \code{type} The \code{type} parameter can be one of \code{c("replicates", "avg", "limits")}
+\itemize{
+\item \code{replicates} the individual replicates will be displayed
+\item \code{avg} only the average of the three series will be displayed
+\item \code{limits} both average and maximum and minimum will be displayed
+}
+}
 }
