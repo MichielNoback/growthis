@@ -18,7 +18,8 @@ Imports:
     readxl,
     ggplot2,
     RColorBrewer,
-    gridExtra
+    gridExtra,
+    shiny
 Depends: 
     R (>= 2.10)
 LazyData: true
