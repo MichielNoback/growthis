@@ -19,9 +19,6 @@ A tibble frame with 20,928 rows and 10 variables, in long format
 \item{medium}{the medium used to grow the bacteria}
 }
 }
-\source{
-\url{http://www.example.com/}
-}
 \usage{
 varioscan
 }

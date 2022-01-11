@@ -20,6 +20,6 @@ The upper panel shows the corrected OD values and the lower panel shows the Cont
 \describe{
 \item{ribbon}{the average as line and the maximum and minimum as ribbon}
 \item{replicates}{the individual three replicates}
-\item{avg}{only the average of each series}
+\item{average}{only the average of each series}
 }
 }

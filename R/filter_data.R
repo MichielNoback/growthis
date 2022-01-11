@@ -40,3 +40,7 @@ filter_data <- function(data,
 
     return(data)
 }
+
+foo <- function() {
+    print("foo")
+}

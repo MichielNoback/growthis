@@ -26,12 +26,14 @@ plot_growthcurves <- function(varioscan_data,
                              replicates = "C"))
     #return(controls_plot)
 
-    if (type == "avg") {
+    if (type == "average") {
         exp_plot <- plot_all(filter_data(data = varioscan_data,
-                             replicates = "Avg"))
+                             replicates = "Avg"),
+                             type)
     } else if (type == "replicates") {
         exp_plot <- plot_all(filter_data(varioscan_data,
-                             replicates = c("1C", "2C", "3C")))
+                             replicates = c("1C", "2C", "3C")),
+                             type)
     } else if (type == "ribbon"){
         exp_plot <- create_ribbon_plot(filter_data(varioscan_data,
                              replicates = c("1C", "2C", "3C", "Avg")))
@@ -39,8 +41,8 @@ plot_growthcurves <- function(varioscan_data,
 
     common_legend <- extract_legend(exp_plot)
     all <- gridExtra::grid.arrange(
-        arrangeGrob(exp_plot + theme(legend.position="none"),
-                    controls_plot + theme(legend.position="none"),
+        gridExtra::arrangeGrob(exp_plot + ggplot2::theme(legend.position="none"),
+                    controls_plot + ggplot2::theme(legend.position="none"),
                     nrow=2, heights = c(3, 1)),
         common_legend, ncol=2, widths=c(10, 1))
     return(all)
@@ -57,6 +59,7 @@ create_controls_plot <- function(data) {
     ggplot2::xlab("Duration (h)") +
     ggplot2::labs(color = "dilution") +
     ggplot2::scale_color_manual(values = get_series_palette()) +
+    ggplot2::theme_minimal() +
     ggplot2::theme(legend.title = ggplot2::element_blank())
                    #legend.key = ggplot2::element_rect()
                    #legend.spacing.y = ggplot2::unit(0.2, "cm"))
@@ -93,9 +96,10 @@ create_ribbon_plot <- function(data) {
         ggplot2::labs(fill = "dilution", color = "dilution") +
         #ggplot2::xlab("Duration (h)") +
         ggplot2::ylab("OD") +
+        ggplot2::theme_minimal() +
         ggplot2::theme(
-            axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
+            axis.title.x = ggplot2::element_blank(),
+            axis.text.x = ggplot2::element_blank(),
         ) +
         ggplot2::facet_wrap(ggplot2::vars(extract))
     return(exp_plot)
@@ -103,7 +107,8 @@ create_ribbon_plot <- function(data) {
 
 #not exported helper function
 #creates a line plot of all replicates, split over extracts
-plot_all <- function(data) {
+plot_all <- function(data, plt_type) {
+    omitlegend <- if (plt_type == "average") TRUE  else FALSE
     exp_plot <- ggplot2::ggplot(data = data,
                     mapping = ggplot2::aes(x = duration, y = OD,
                                            color = as.factor(dilution))) +
@@ -112,11 +117,12 @@ plot_all <- function(data) {
         ggplot2::scale_x_time() +
         #ggplot2::xlab("Duration (h)") +
         ggplot2::labs(color = "dilution") +
+        ggplot2::theme_minimal() +
         ggplot2::theme(
-            axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-        ) +
-        ggplot2::scale_color_manual(values = get_series_palette())
+            axis.title.x = ggplot2::element_blank(),
+            axis.text.x = ggplot2::element_blank()) +
+        ggplot2::scale_color_manual(values = get_series_palette()) +
+        {if (omitlegend) ggplot2::guides(linetype = "none")}
     return(exp_plot)
 }
 
@@ -124,7 +130,7 @@ plot_all <- function(data) {
 #extract legend
 #https://github.com/hadley/ggplot2/wiki/Share-a-legend-between-two-ggplot2-graphs
 extract_legend<-function(a.gplot){
-    tmp <- ggplot_gtable(ggplot_build(a.gplot))
+    tmp <- ggplot2::ggplot_gtable(ggplot2::ggplot_build(a.gplot))
     leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
     legend <- tmp$grobs[[leg]]
     return(legend)
