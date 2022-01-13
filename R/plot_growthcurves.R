@@ -4,10 +4,11 @@
 #' The upper panel shows the corrected OD values and the lower panel shows the Control series.
 #'
 #' @param varioscan_data all data in long format
-#' @param type a character, one of \code{c("replicates", "avg", "ribbon")}. See details
+#' @param plot_type a character, one of \code{c("replicates", "avg", "ribbon")}. See details
+#' @param faceting_var the variable to facet on.
 #'
 #' @details
-#' \code{type} The `type` parameter can be one of \code{c("replicates", "avg", "limits")} and controls which data will be displayed:
+#' \code{plot_type} The `plot_type` parameter can be one of \code{c("replicates", "avg", "limits")} and controls which data will be displayed:
 #' \describe{
 #'   \item{ribbon}{the average as line and the maximum and minimum as ribbon}
 #'   \item{replicates}{the individual three replicates}
@@ -18,25 +19,27 @@
 #' @export
 #'
 plot_growthcurves <- function(varioscan_data,
-                              type = "ribbon") {
+                              plot_type = "ribbon") {
     if (nrow(varioscan_data) == 0) {
         stop("an empty dataset can not be plotted")
     }
+
     controls_plot <- create_controls_plot(filter_data(data = varioscan_data,
                              replicates = "C"))
-    #return(controls_plot)
 
-    if (type == "average") {
+    if (plot_type == "average") {
         exp_plot <- plot_all(filter_data(data = varioscan_data,
                              replicates = "Avg"),
-                             type)
-    } else if (type == "replicates") {
+                             plot_type)
+    } else if (plot_type == "replicates") {
         exp_plot <- plot_all(filter_data(varioscan_data,
                              replicates = c("1C", "2C", "3C")),
-                             type)
-    } else if (type == "ribbon"){
+                             plot_type)
+    } else if (plot_type == "ribbon"){
         exp_plot <- create_ribbon_plot(filter_data(varioscan_data,
                              replicates = c("1C", "2C", "3C", "Avg")))
+    } else {
+        stop(paste0("unknown plot ype requested: ", plot_type))
     }
 
     common_legend <- extract_legend(exp_plot)
@@ -54,7 +57,7 @@ create_controls_plot <- function(data) {
                 mapping = ggplot2::aes(x = duration, y = OD,
                                        color = as.factor(dilution))) +
     ggplot2::geom_line() +
-    ggplot2::facet_wrap(ggplot2::vars(extract)) +
+    ggplot2::facet_wrap(ggplot2::vars(start_date, series, extract)) +
     ggplot2::scale_x_time() +
     ggplot2::xlab("Duration (h)") +
     ggplot2::labs(color = "dilution") +
@@ -78,7 +81,7 @@ create_ribbon_plot <- function(data) {
     #determine range per series
     data_wide <- data %>%
         dplyr::filter(replicate %in% c("1C", "2C", "3C", "Avg")) %>%
-        dplyr::select(c(dilution, extract, duration, replicate, OD)) %>%
+        #dplyr::select(c(dilution, extract, duration, replicate, OD)) %>%
         tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
         dplyr::mutate(minimum = pmin(`1C`, `2C`, `3C`),
                       maximum = pmax(`1C`, `2C`, `3C`))
@@ -101,7 +104,7 @@ create_ribbon_plot <- function(data) {
             axis.title.x = ggplot2::element_blank(),
             axis.text.x = ggplot2::element_blank(),
         ) +
-        ggplot2::facet_wrap(ggplot2::vars(extract))
+        ggplot2::facet_wrap(ggplot2::vars(start_date, series, extract))
     return(exp_plot)
 }
 
@@ -113,7 +116,7 @@ plot_all <- function(data, plt_type) {
                     mapping = ggplot2::aes(x = duration, y = OD,
                                            color = as.factor(dilution))) +
         ggplot2::geom_line(ggplot2::aes(linetype = replicate)) +
-        ggplot2::facet_wrap(ggplot2::vars(extract)) +
+        ggplot2::facet_wrap(ggplot2::vars(start_date, series, extract)) +
         ggplot2::scale_x_time() +
         #ggplot2::xlab("Duration (h)") +
         ggplot2::labs(color = "dilution") +

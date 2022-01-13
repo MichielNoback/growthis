@@ -19,7 +19,9 @@ Imports:
     ggplot2,
     RColorBrewer,
     gridExtra,
-    shiny
+    shiny,
+    shinyWidgets,
+    shinydashboard
 Depends: 
     R (>= 2.10)
 LazyData: true

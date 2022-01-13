@@ -3,16 +3,18 @@
 
 
 growthcurve_tab <- shiny::fluidPage(
-    shiny::fluidRow(
-        shiny::radioButtons(inputId = "graph_type",
-                    label =  "Graph type",
-                    choices = c("ribbon", "average", "replicates"),
-                    selected = "ribbon",
-                    inline = TRUE),
-
-        shiny::plotOutput(outputId = "growthcurve_plot")
+    shinydashboard::box(style='padding:20px;width:1000px;overflow-x: scroll;height:800px;overflow-y: scroll;',
+        shiny::fluidRow(
+            shiny::radioButtons(inputId = "graph_type",
+                        label =  "Graph type",
+                        choices = c("ribbon", "average", "replicates"),
+                        selected = "ribbon",
+                        inline = TRUE),
+            shiny::plotOutput(outputId = "growthcurve_plot", width = "800px", height="600px")
+        )
     )
 )
+
 
 shiny_app_ui <- function() {
     ui <- shiny::fluidPage(
@@ -21,10 +23,11 @@ shiny_app_ui <- function() {
             shiny::sidebarPanel(
                 width = 3, #total = 12
                 shiny::h4("Make selections"),
-                shiny::dateRangeInput(inputId = "date_range",
-                                      label = "Date range",
-                                      start = "2020-01-01",
-                                      startview = "year"),
+                shinyWidgets::pickerInput(inputId = "experiment_names",
+                                   label = "Experiment names",
+                                   multiple = TRUE,
+                                   choices = NULL,
+                                   options = list(title = "Choose experiments")),
                 shiny::checkboxGroupInput(inputId = "extracts",
                                           label = "Extracts",
                                           choices = NULL),

@@ -18,17 +18,28 @@ shiny_app_server <- function(input, output, session) {
 
     #only runs at start of session
     shiny::observe({
-        message("updating extracts and strains")
-        all_extracts <- available_extracts(varioscan)
-        all_strains <- available_strains(varioscan)
+        message("updating experiment names")
+        all_experiment_names <- available_experiment_names(varioscan)
+
+        shinyWidgets::updatePickerInput(session,
+                                 inputId = "experiment_names",
+                                 choices = all_experiment_names)
+    })
+
+    shiny::observeEvent(input$experiment_names, {
+        message_helper("experiment selection changed", input$experiment_names)
+        all_extracts <- available_extracts(varioscan, input$experiment_names)
+        all_strains <- available_strains(varioscan, input$experiment_names)
+
         shiny::updateCheckboxGroupInput(session,
-                                        inputId = "extracts",
-                                        choices = all_extracts,
-                                        selected = all_extracts)
+                                inputId = "extracts",
+                                choices = all_extracts,
+                                selected = all_extracts)
+
         shiny::updateCheckboxGroupInput(session,
-                                        inputId = "strains",
-                                        choices = all_strains,
-                                        selected = all_strains)
+                                inputId = "strains",
+                                choices = all_strains,
+                                selected = all_strains)
     })
 
     #only take action when the button is clicked
@@ -43,16 +54,24 @@ shiny_app_server <- function(input, output, session) {
         message_helper("graph_type", input$graph_type)
         message("====================")
 
+        extracts <<- input$extracts
+        strains <<- input$strains
+        experiment_names <<- input$experiment_names
+
         user_data$filtered_data <- filter_data(data = varioscan,
                             extracts = input$extracts,
                             strains = input$strains,
-                            lower_date = lubridate::ymd(input$date_range[1]),
-                            upper_date = lubridate::ymd(input$date_range[2]))
+                            experiment_names = input$experiment_names
+                            #lower_date = lubridate::ymd(input$date_range[1]),
+                            #upper_date = lubridate::ymd(input$date_range[2])
+                            )
         #print(user_data$filtered_data)
+        message_helper("data filtered", unique(user_data$filtered_data$experiment_name))
+        filtered_data <<- user_data$filtered_data
 
         output$growthcurve_plot <- renderPlot({
             plot_growthcurves(varioscan_data = user_data$filtered_data,
-                              type = input$graph_type)
+                              plot_type = input$graph_type)
         })
     })
 

@@ -1,8 +1,3 @@
-#library(readxl)
-#library(dplyr)
-#library(lubridate)
-# replaced by usethis::use_package("readxl") etc
-
 #' Reads Varioscan data from Excel
 #'
 #' Reads varioscan data from a given excel file. Assumes data is arranged in 96-well format (8 rows and 12 columns). It also assumes a triplicate experimental setup: 3 curves in triplo, each with a control at the fourth column. If the "General_info" tab does not contain metadata at the correct location (see below), the \code{experiments} argument will be used for the labeling.
@@ -19,19 +14,15 @@ read_varioscan <- function(xlsx_file,
                     dilutions = c(0.02, 0.01, 0.005, 0.0025, 0.0013, 0.0006, 0.0003, 0.0),
                     time_interval = 10) {
     #local variables
-    data_sheet = "Photometric1"
+    data_sheet <- 2 #"Photometric"
     metadata_sheet <- "General_Info"
     experiments = c("Exp1", "Exp2", "Exp3")
     plate_format = c(8, 12)
     data_series = paste0(rep(experiments, each = 4), "_", c("1", "2", "3", "C"))
     column_names = c("dilution", data_series)
 
-    #read growth date
-    start_date_cell <- readxl::read_excel(xlsx_file,
-                                          range = paste0(metadata_sheet, "!F9"),
-                                          col_names = FALSE)
-    start_date <- lubridate::dmy(unlist(strsplit(start_date_cell$...1,
-                                                 split = " "))[1])
+    start_date <- extract_start_date(xlsx_file, metadata_sheet)
+    experiment_name <- extract_experiment_name(xlsx_file, metadata_sheet)
 
     # process metadata
     metadata <- read_metadata(xlsx_file, metadata_sheet)
@@ -39,10 +30,10 @@ read_varioscan <- function(xlsx_file,
 
     data <- readxl::read_excel(xlsx_file, sheet = data_sheet)
 
-    #iterate blocks with timepoints
+    # iterate blocks with timepoints
     rows <- nrow(data)
     starts <- seq(from = 16, to = rows, by = 22)
-    #empty tibble to hold everything
+    # empty tibble to hold everything
     all_data <- list()
 
     for (n in seq_along(starts)) {
@@ -51,46 +42,69 @@ read_varioscan <- function(xlsx_file,
         row_range <- start:(start + (plate_format[1]-1))
         column_range <- 1:(plate_format[2] + 1)
 
-        #select block with measurements
+        # select block with measurements
         time_point_block <- data[row_range, column_range]
-        #print(time_point_block)
 
-        #give correct names
+        # give correct names
         names(time_point_block) <- column_names
         time_point_block$dilution = dilutions
 
-        #convert to numeric
+        # convert to numeric
         time_point_block <- time_point_block %>%
             dplyr::mutate(across(where(is.character), as.numeric))
 
-        #background correction and averaging
-        #return(time_point_block)
+        # background correction and averaging
         time_point_block <- do_bc_correction_and_averaging(time_point_block)
 
-        #add time column
+        # add time column
         time_point_block$time = rep(time_point, nrow(time_point_block))
 
-        #return(time_point_block)
-        #pivot to long format
+        # pivot to long format
         time_point_block <- time_point_block %>%
             tidyr::pivot_longer(cols = -c(dilution, time),
                                 names_to = c("series", "replicate"),
                                 names_pattern = "(.+)_(.+)",
                                 values_to = "OD")
-        #converts integer interval to duration and adds date of experiment
+
+        # converts integer interval to duration and adds date of experiment
         time_point_block <- time_point_block %>%
             dplyr::mutate(duration = lubridate::dhours(time / 60),
-                          start_date = start_date) %>%
+                          start_date = start_date,
+                          experiment_name = experiment_name) %>%
             dplyr::select(-time)
 
         if(! is.null(metadata)) {
             time_point_block <- add_metadata(time_point_block, metadata)
         }
         #return(time_point_block)
-        #print(time_point_block)
+
         all_data[[n]] <- time_point_block
     }
-    return(do.call(rbind, all_data))
+    # bind them all
+    all_data <- do.call(rbind, all_data)
+
+    # finally remove all "discard" data
+    all_data <- all_data %>% dplyr::filter(strain != "discard")
+
+    return(all_data)
+}
+
+#not exported helper function
+extract_start_date <- function(xlsx_file, metadata_sheet) {
+    start_date_cell <- readxl::read_excel(xlsx_file,
+                                          range = paste0(metadata_sheet, "!F9"),
+                                          col_names = FALSE)
+    start_date <- lubridate::dmy(unlist(strsplit(start_date_cell$...1,
+                                                 split = " "))[1])
+    return(start_date)
+}
+
+#not exported helper function
+extract_experiment_name <- function(xlsx_file, metadata_sheet) {
+    experiment_name <- readxl::read_excel(xlsx_file,
+                                          range = paste0(metadata_sheet, "!F5"),
+                                          col_names = FALSE)
+    return(experiment_name$...1)
 }
 
 
@@ -127,10 +141,6 @@ do_bc_correction_and_averaging <- function(time_point_block) {
 #not exported helper function
 add_metadata <- function(time_point_block, metadata) {
     time_point_block <- time_point_block %>% dplyr::mutate(
-        # additive = character(nrow(time_point_block)),
-        # additive = ifelse(series == "Exp1", metadata$Additive[1], additive),
-        # additive = ifelse(series == "Exp2", metadata$Additive[2], additive),
-        # additive = ifelse(series == "Exp3", metadata$Additive[3], additive),
         strain = character(nrow(time_point_block)),
         strain = ifelse(series == "Exp1", metadata$Strain[1], strain),
         strain = ifelse(series == "Exp2", metadata$Strain[2], strain),
