@@ -5,7 +5,6 @@
 #'
 #' @param varioscan_data all data in long format
 #' @param plot_type a character, one of \code{c("replicates", "avg", "ribbon")}. See details
-#' @param faceting_var the variable to facet on.
 #'
 #' @details
 #' \code{plot_type} The `plot_type` parameter can be one of \code{c("replicates", "avg", "limits")} and controls which data will be displayed:

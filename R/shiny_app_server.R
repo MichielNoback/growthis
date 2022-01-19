@@ -2,7 +2,7 @@
 #' @export
 #'
 shiny_app <- function() {
-    load(paste0(here::here(), "/data/varioscan.rda"))
+    load(paste0(here::here(), "/data/varioscan_data.rda"))
     shiny::shinyApp(ui = shiny_app_ui, server = shiny_app_server)
 }
 
@@ -18,18 +18,17 @@ shiny_app_server <- function(input, output, session) {
 
     #only runs at start of session
     shiny::observe({
-        message("updating experiment names")
-        all_experiment_names <- available_experiment_names(varioscan)
-
+        message("updating experiment dates")
+        all_experiment_dates <- available_experiment_dates(varioscan_data)
         shinyWidgets::updatePickerInput(session,
-                                 inputId = "experiment_names",
-                                 choices = all_experiment_names)
+                                 inputId = "experiment_dates",
+                                 choices = all_experiment_dates)
     })
 
-    shiny::observeEvent(input$experiment_names, {
-        message_helper("experiment selection changed", input$experiment_names)
-        all_extracts <- available_extracts(varioscan, input$experiment_names)
-        all_strains <- available_strains(varioscan, input$experiment_names)
+    shiny::observeEvent(input$experiment_dates, {
+        message_helper("experiment selection changed", input$experiment_dates)
+        all_extracts <- available_extracts(varioscan_data, input$experiment_dates)
+        all_strains <- available_strains(varioscan_data, input$experiment_dates)
 
         shiny::updateCheckboxGroupInput(session,
                                 inputId = "extracts",
@@ -54,51 +53,59 @@ shiny_app_server <- function(input, output, session) {
         message_helper("graph_type", input$graph_type)
         message("====================")
 
-        extracts <<- input$extracts
-        strains <<- input$strains
-        experiment_names <<- input$experiment_names
+        # extracts <<- input$extracts
+        # strains <<- input$strains
+        # experiment_dates <<- input$experiment_dates
 
-        user_data$filtered_data <- filter_data(data = varioscan,
+        user_data$filtered_data <- filter_data(data = varioscan_data,
                             extracts = input$extracts,
                             strains = input$strains,
-                            experiment_names = input$experiment_names
-                            #lower_date = lubridate::ymd(input$date_range[1]),
-                            #upper_date = lubridate::ymd(input$date_range[2])
-                            )
-        #print(user_data$filtered_data)
-        message_helper("data filtered", unique(user_data$filtered_data$experiment_name))
-        filtered_data <<- user_data$filtered_data
+                            experiment_dates = input$experiment_dates)
+
+        message_helper("data filtered", unique(user_data$filtered_data$start_date))
+        #filtered_data <<- user_data$filtered_data
 
         output$growthcurve_plot <- renderPlot({
             plot_growthcurves(varioscan_data = user_data$filtered_data,
                               plot_type = input$graph_type)
         })
+
+        user_data$growth_params <- do_growth_analysis(user_data$filtered_data)
+
+        output$growth_params <- DT::renderDataTable({
+            DT::datatable(user_data$growth_params
+                          , options = list(dom = 'tp')) %>%
+                DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
+                DT::formatSignif(columns = c(8,9,11,14), digits = 2)
+        })
     })
 
+    # Downloadable csv of selected dataset
+    output$data_download <- shiny::downloadHandler(
+        filename = function() {
+            paste0("growthis_data_download_",
+                   lubridate::today(), ".csv")
+        },
+        content = function(file) {
+            filtered_data <- filter_data(data = varioscan_data,
+                            extracts = input$extracts,
+                            strains = input$strains,
+                            experiment_dates = input$experiment_dates)
+            write.csv(filtered_data, file, row.names = FALSE)
+        }
+    )
 
-
-    ##UI OBSERVERS ONLY STORE IN user_data
-
-    # shiny::observeEvent(input$date_range, {
-    #     message_helper("date range changed", user_data$date_range)
-    #     user_data$date_range <- input$date_range
-    # })
-    #
-    # shiny::observeEvent(input$extracts, {
-    #     user_data$extracts <- input$extracts
-    #     message_helper("extracts changed", user_data$extracts)
-    # })
-    #
-    # shiny::observeEvent(input$strains, {
-    #     user_data$strains <- input$strains
-    #     message_helper("strains changed", user_data$strains)
-    # })
-    #
-    # shiny::observeEvent(input$graph_type, {
-    #     user_data$graph_type <- input$graph_type
-    #     message_helper("graph_type changed", user_data$graph_type)
-    # })
-
+    output$growth_statistics_download <- shiny::downloadHandler(
+        filename = function() {
+            paste0("growthis_statistics_",
+                   lubridate::today(), ".csv")
+        },
+        content = function(file) {
+            write.csv(user_data$growth_params,
+                      file,
+                      row.names = FALSE)
+        }
+    )
 }
 
 

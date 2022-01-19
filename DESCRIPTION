@@ -21,7 +21,9 @@ Imports:
     gridExtra,
     shiny,
     shinyWidgets,
-    shinydashboard
+    shinydashboard,
+    growthcurver,
+    DT
 Depends: 
     R (>= 2.10)
 LazyData: true

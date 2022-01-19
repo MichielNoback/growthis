@@ -1,12 +1,18 @@
 # not exported shiny helper functions
 
+#' prepares the growth parameters dataframe, as
+prepare_stats_data_download <- function(growth_params) {
 
-#' serves available experiment names of the dataset
+    growth_params %>% tidyr::separate()
+}
+
+
+#' serves available experiment start dates of the dataset
 #'
 #' @param data the varioscan data tibble
 #'
-available_experiment_names <- function(data) {
-    unique(data$experiment_name)
+available_experiment_dates <- function(data) {
+    unique(data$start_date)
 }
 
 #' serves available extracts of the dataset for the given experiments
@@ -14,8 +20,8 @@ available_experiment_names <- function(data) {
 #' @param data the varioscan data tibble
 #' @param the experiments
 #'
-available_extracts <- function(data, experiment_names) {
-    data %>% dplyr::filter(experiment_name %in% experiment_names) %>%
+available_extracts <- function(data, experiment_dates) {
+    data %>% dplyr::filter(start_date %in% experiment_dates) %>%
         dplyr::pull(extract) %>%
         unique()
 }
@@ -25,8 +31,8 @@ available_extracts <- function(data, experiment_names) {
 #'
 #' @param data the varioscan data tibble
 #'
-available_strains <- function(data, experiment_names) {
-    data %>% dplyr::filter(experiment_name %in% experiment_names) %>%
+available_strains <- function(data, experiment_dates) {
+    data %>% dplyr::filter(start_date %in% experiment_dates) %>%
     dplyr::pull(strain) %>%
     unique()
 }

@@ -22,7 +22,7 @@ read_varioscan <- function(xlsx_file,
     column_names = c("dilution", data_series)
 
     start_date <- extract_start_date(xlsx_file, metadata_sheet)
-    experiment_name <- extract_experiment_name(xlsx_file, metadata_sheet)
+    #experiment_name <- extract_experiment_name(xlsx_file, metadata_sheet)
 
     # process metadata
     metadata <- read_metadata(xlsx_file, metadata_sheet)
@@ -70,7 +70,8 @@ read_varioscan <- function(xlsx_file,
         time_point_block <- time_point_block %>%
             dplyr::mutate(duration = lubridate::dhours(time / 60),
                           start_date = start_date,
-                          experiment_name = experiment_name) %>%
+                          #experiment_name = experiment_name
+                          ) %>%
             dplyr::select(-time)
 
         if(! is.null(metadata)) {
@@ -94,8 +95,7 @@ extract_start_date <- function(xlsx_file, metadata_sheet) {
     start_date_cell <- readxl::read_excel(xlsx_file,
                                           range = paste0(metadata_sheet, "!F9"),
                                           col_names = FALSE)
-    start_date <- lubridate::dmy(unlist(strsplit(start_date_cell$...1,
-                                                 split = " "))[1])
+    start_date <- as.character(unlist(strsplit(start_date_cell$...1, split = " "))[1])
     return(start_date)
 }
 
