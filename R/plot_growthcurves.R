@@ -23,8 +23,8 @@ plot_growthcurves <- function(varioscan_data,
         stop("an empty dataset can not be plotted")
     }
 
-    controls_plot <- create_controls_plot(filter_data(data = varioscan_data,
-                             replicates = "C"))
+    controls_plot <- create_controls_plot(
+                        filter_data(data = varioscan_data, replicates = "C"))
 
     if (plot_type == "average") {
         exp_plot <- plot_all(filter_data(data = varioscan_data,

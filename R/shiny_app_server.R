@@ -73,8 +73,8 @@ shiny_app_server <- function(input, output, session) {
         user_data$growth_params <- do_growth_analysis(user_data$filtered_data)
 
         output$growth_params <- DT::renderDataTable({
-            DT::datatable(user_data$growth_params
-                          , options = list(dom = 'tp')) %>%
+            DT::datatable(user_data$growth_params,
+                          options = list(dom = 'tp', pageLength = 20)) %>%
                 DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
                 DT::formatSignif(columns = c(8,9,11,14), digits = 2)
         })

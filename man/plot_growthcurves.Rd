@@ -4,19 +4,19 @@
 \alias{plot_growthcurves}
 \title{Plots varioscan data in growth curves.}
 \usage{
-plot_growthcurves(varioscan_data, type = "ribbon")
+plot_growthcurves(varioscan_data, plot_type = "ribbon")
 }
 \arguments{
 \item{varioscan_data}{all data in long format}
 
-\item{type}{a character, one of \code{c("replicates", "avg", "ribbon")}. See details}
+\item{plot_type}{a character, one of \code{c("replicates", "avg", "ribbon")}. See details}
 }
 \description{
 Support currently for three types of visualizations: Only average (line plot), all three replicates separately, and a ribbon plot with the average of the three replicates. In the ribbon plot the lower and upper bounds represent the minimum and maximum values of the replicates.
 The upper panel shows the corrected OD values and the lower panel shows the Control series.
 }
 \details{
-\code{type} The \code{type} parameter can be one of \code{c("replicates", "avg", "limits")} and controls which data will be displayed:
+\code{plot_type} The \code{plot_type} parameter can be one of \code{c("replicates", "avg", "limits")} and controls which data will be displayed:
 \describe{
 \item{ribbon}{the average as line and the maximum and minimum as ribbon}
 \item{replicates}{the individual three replicates}

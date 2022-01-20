@@ -9,8 +9,8 @@ filter_data(
   extracts = "all",
   strains = "all",
   replicates = "all",
-  lower_date = lubridate::dmy("1-1-2000"),
-  upper_date = lubridate::today()
+  experiment_dates = "all",
+  exclude = "none"
 )
 }
 \arguments{
@@ -22,9 +22,10 @@ filter_data(
 
 \item{replicates}{the replicates to include. Defaults to all replicates.}
 
-\item{lower_date}{Lubridate Date object: the lower date (start_date of experiment) to include, and later. Defaults to a week ago from the current day.}
+\item{experiment_dates}{the start date values to include}
 
-\item{upper}{Lubridate Date object: the upper date (inclusive) to include, and before. Defaults to the current day.}
+\item{exclude}{a list indicating which series/dilution/replicate should be excluded. Defaults to "none".
+See details.}
 }
 \value{
 filtered data with same columns
@@ -38,6 +39,35 @@ Assumes these columns exist:
   [11] "medium"
 }
 }
+\details{
+\code{exclude} The \code{exclude} parameter can be used to specifically exclude a
+replicate of a series or a (set of) dilution(s) of a replicate (of a series)
+of a specific experiment of course.
+It is intended to use for excluding failed wells from the plate.
+It should be provided as a list in this form:\preformatted{exclude = list(
+    start_date = "30-1-2020",
+    series = "Exp1",
+    replicate = "1", #will remove both 1 and 1C
+    dilution = c(0.02, 0.01) #if left empty, all dilutions of te replicate will be excluded
+)
+}
+
+Optionally, a list-of lists can be provided with repeated definitions of items to exclude:\preformatted{exclude = list(
+    list(
+        start_date = "30-1-2020",
+        series = "Exp1",
+        replicate = "1", #will remove both 1 and 1C
+        dilution = c(0.02, 0.01) #if left empty, all dilutions of the replicate will be excluded
+    ),
+    list(
+        start_date = "30-1-2020",
+        series = "Exp2",
+        replicate = "2"
+        #empty, so all dilutions
+    )
+)
+}
+}
 \examples{
 #filter replicates
 filter_data(all_data, replicates = c("1C", "2C"))
@@ -46,6 +76,6 @@ filter_data(all_data, replicates = c("1C", "2C"))
 filter_data(all_data, replicates = c("1C", "2C"), extracts = "Tulip stem")
 
 filter replicates and lower date
-filter_data(all_data, replicates = c("1C", "2C"), lower_date = lubridate::dmy("2-3-2020"))
+filter_data(all_data, replicates = c("1C", "2C"))
 
 }
