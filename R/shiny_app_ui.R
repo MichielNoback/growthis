@@ -11,7 +11,8 @@ growthcurve_tab <- shiny::fluidPage(
                         selected = "ribbon",
                         inline = TRUE),
             shiny::plotOutput(outputId = "growthcurve_plot",
-                              width = "1000px", height="600px")
+                              width = "1000px", height="600px"),
+            shiny::tags$div(id = "well_selector_div")
 #        )
     )
 )
@@ -50,8 +51,8 @@ shiny_app_ui <- function() {
 
             shiny::mainPanel(
                 shiny::tabsetPanel(type = "tabs",
-                            shiny::tabPanel("Growth curves", growthcurve_tab),
-                            shiny::tabPanel("Growth statistics", statistics_tab)
+                                   shiny::tabPanel("Growth curves", growthcurve_tab),
+                                   shiny::tabPanel("Growth statistics", statistics_tab)
                 )
             )
         )

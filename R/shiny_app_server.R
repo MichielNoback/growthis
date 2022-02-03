@@ -3,7 +3,8 @@
 #'
 shiny_app <- function() {
     load(paste0(here::here(), "/data/varioscan_data.rda"))
-    shiny::shinyApp(ui = shiny_app_ui, server = shiny_app_server)
+    #shiny::shinyApp(ui = shiny_app_ui, server = shiny_app_server)
+    shiny::runApp(list(ui = shiny_app_ui, server = shiny_app_server), launch.browser = TRUE)
 }
 
 #foo() # in filter_data.R - runs
@@ -45,17 +46,15 @@ shiny_app_server <- function(input, output, session) {
     shiny::observeEvent(input$show_graph, {
         shiny::req(input$strains, input$extracts)
 
-        #user_data$graph_type <- input$graph_type
         message("====================")
-        message_helper("graph requested with date_range", input$date_range)
+        message_helper("experiment dates", input$experiment_dates)
         message_helper("extracts", input$extracts)
         message_helper("strains", input$strains)
         message_helper("graph_type", input$graph_type)
         message("====================")
 
-        # extracts <<- input$extracts
-        # strains <<- input$strains
-        # experiment_dates <<- input$experiment_dates
+
+        experiment_dates <<- input$experiment_dates
 
         user_data$filtered_data <- filter_data(data = varioscan_data,
                             extracts = input$extracts,

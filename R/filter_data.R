@@ -70,14 +70,12 @@ filter_data <- function(data,
                         replicates = "all",
                         experiment_dates = "all",
                         exclude_wells = "none") {
-    print(exclude_wells)
     if (length(extracts) == 0) stop("argument extracts is empty")
     if (length(strains) == 0) stop("argument strains is empty")
     if (length(replicates) == 0) stop("argument replicates is empty")
     if (length(experiment_dates) == 0) stop("argument experiment_dates is empty")
     if (length(exclude_wells) == 0 ||
         (class(exclude_wells) == "character" && exclude_wells != "none")){
-        #||        class(exclude_wells) != "list"
         stop("argument exclude_wells is empty or illegal")
     }
 
@@ -88,11 +86,9 @@ filter_data <- function(data,
         dplyr::filter(if(replicates[1] == "all") TRUE else replicate %in% replicates) %>%
         dplyr::filter(if(experiment_dates[1] == "all") TRUE else start_date %in% experiment_dates)
 
-    message_helper("data dimensions:", dim(data))
-
     if (class(exclude_wells) != "character") {
-        message("filtering excludes")
-
+        if (class(exclude_wells) != "list") stop("only list data type can exclude wells")
+        #message("filtering excludes")
         if (class(exclude_wells[[1]]) == "list") { #multiple
             for (single_exclude in exclude_wells) {
                 data <- exclude_data(data, single_exclude)
@@ -100,6 +96,13 @@ filter_data <- function(data,
         } else { #single
             data <- exclude_data(data, exclude_wells)
         }
+        # data are excluded so averages should be recalculated
+        data <- data %>%
+            tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
+            dplyr::rowwise() %>%
+            dplyr::mutate(Avg = if(any(is.na(c(`1C`, `2C`, `3C`)))) mean(c(`1C`, `2C`, `3C`), na.rm = T) else Avg) %>%
+            tidyr::pivot_longer(cols = 9:16, names_to = "replicate", values_to = "OD") %>%
+            dplyr::select(dilution, series, replicate, OD, duration, start_date, strain, extract, date_extracted, medium)
     }
 
     return(data)
@@ -122,8 +125,6 @@ exclude_data <- function(data, exclude) {
 
     #expand to include controls
     exclude$replicates <- c(exclude$replicate, paste0(exclude$replicate, "C"))
-
-    message_helper("single exclude", exclude)
 
     data <- data %>%
         dplyr::filter(

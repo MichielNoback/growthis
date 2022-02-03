@@ -10,7 +10,7 @@ filter_data(
   strains = "all",
   replicates = "all",
   experiment_dates = "all",
-  exclude = "none"
+  exclude_wells = "none"
 )
 }
 \arguments{
@@ -41,29 +41,30 @@ Assumes these columns exist:
 }
 \details{
 \code{exclude} The \code{exclude} parameter can be used to specifically exclude a
-replicate of a series or a (set of) dilution(s) of a replicate (of a series)
-of a specific experiment of course.
-It is intended to use for excluding failed wells from the plate.
-It should be provided as a list in this form:\preformatted{exclude = list(
-    start_date = "30-1-2020",
+single failed well (i.e. a single growth curve).
+If multiple should be excluded, a list should be provided with
+an element for each well.
+
+It should be provided as a list in this form:\preformatted{exclude_single <- list(
+    start_date = "2-12-2021",
     series = "Exp1",
-    replicate = "1", #will remove both 1 and 1C
-    dilution = c(0.02, 0.01) #if left empty, all dilutions of te replicate will be excluded
+    dilution = 0.02,
+    replicate = "1" #will remove both 1 and 1C
 )
 }
 
-Optionally, a list-of lists can be provided with repeated definitions of items to exclude:\preformatted{exclude = list(
+Optionally, a list-of lists can be provided with repeated definitions of items to exclude:\preformatted{exclude_multiple <- list(
     list(
-        start_date = "30-1-2020",
+        start_date = "2-12-2021",
         series = "Exp1",
-        replicate = "1", #will remove both 1 and 1C
-        dilution = c(0.02, 0.01) #if left empty, all dilutions of the replicate will be excluded
+        dilution = 0.02,
+        replicate = "1" #will remove both 1 and 1C
     ),
     list(
-        start_date = "30-1-2020",
+        start_date = "2-12-2021",
         series = "Exp2",
-        replicate = "2"
-        #empty, so all dilutions
+        dilution = 0.01,
+        replicate = "2" #will remove both 2 and 2C
     )
 )
 }

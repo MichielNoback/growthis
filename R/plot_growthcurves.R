@@ -77,13 +77,14 @@ get_series_palette <- function() {
 
 #not exported helper function
 create_ribbon_plot <- function(data) {
+    #print(unique(data$replicate))
+
     #determine range per series
     data_wide <- data %>%
         dplyr::filter(replicate %in% c("1C", "2C", "3C", "Avg")) %>%
-        #dplyr::select(c(dilution, extract, duration, replicate, OD)) %>%
         tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
-        dplyr::mutate(minimum = pmin(`1C`, `2C`, `3C`),
-                      maximum = pmax(`1C`, `2C`, `3C`))
+        dplyr::mutate(minimum = pmin(`1C`, `2C`, `3C`, na.rm = T),
+                      maximum = pmax(`1C`, `2C`, `3C`, na.rm = T))
 
     exp_plot <- ggplot2::ggplot(data = data_wide,
                     mapping = ggplot2::aes(x = duration, y = Avg)) +

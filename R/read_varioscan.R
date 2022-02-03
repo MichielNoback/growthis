@@ -22,11 +22,9 @@ read_varioscan <- function(xlsx_file,
     column_names = c("dilution", data_series)
 
     start_date <- extract_start_date(xlsx_file, metadata_sheet)
-    #experiment_name <- extract_experiment_name(xlsx_file, metadata_sheet)
 
     # process metadata
     metadata <- read_metadata(xlsx_file, metadata_sheet)
-    #return(metadata)
 
     data <- readxl::read_excel(xlsx_file, sheet = data_sheet)
 
