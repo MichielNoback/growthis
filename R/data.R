@@ -20,3 +20,14 @@
 #' }
 #'
 "varioscan"
+
+#' The experiments, with their dates and descriptions
+#'
+#' @format A tibble frame with 20,928 rows and 10 variables, in long format
+#' \describe{
+#'   \item{file_name}{the name of the excel file with raw varioscan data and experiment metadata}
+#'   \item{experiment_date}{the date on which the experimen was run. This identifies the dataset uniquely}
+#'   \item{description}{A short description of the experiment}
+#' }
+#'
+"experiment_data"

@@ -53,6 +53,16 @@ It should be provided as a list in this form:\preformatted{exclude_single <- lis
 )
 }
 
+A special case is the removal of a control well (usually when infection has started to grow in it).
+When a control well is removed, all its values are replaced by its 2 hour value. Corrected values
+for the replicates will be recalculated.\preformatted{exclude_control <- list(
+    start_date = "2-12-2021",
+    series = "Exp1",
+    dilution = 0.02,
+    replicate = "C" #need to recalculate the corrected values for all three replicates
+)
+}
+
 Optionally, a list-of lists can be provided with repeated definitions of items to exclude:\preformatted{exclude_multiple <- list(
     list(
         start_date = "2-12-2021",

@@ -1,3 +1,16 @@
+#' Reads experiment names to be used in the app
+#'
+#' @param xlsx_file An excel file with two columns: `file_name` and `experiment_name`
+#' @return a tibble with 3 columns
+#'
+#' @export
+#'
+read_experiment_data <- function(xlsx_file) {
+    experiment_names <- readxl::read_excel(xlsx_file)
+    return(experiment_names)
+}
+
+
 #' Reads Varioscan data from Excel
 #'
 #' Reads varioscan data from a given excel file. Assumes data is arranged in 96-well format (8 rows and 12 columns). It also assumes a triplicate experimental setup: 3 curves in triplo, each with a control at the fourth column. If the "General_info" tab does not contain metadata at the correct location (see below), the \code{experiments} argument will be used for the labeling.
@@ -20,7 +33,6 @@ read_varioscan <- function(xlsx_file,
     plate_format = c(8, 12)
     data_series = paste0(rep(experiments, each = 4), "_", c("1", "2", "3", "C"))
     column_names = c("dilution", data_series)
-
     start_date <- extract_start_date(xlsx_file, metadata_sheet)
 
     # process metadata
@@ -36,7 +48,7 @@ read_varioscan <- function(xlsx_file,
 
     for (n in seq_along(starts)) {
         start <- starts[n]
-        time_point = (n - 1) * time_interval
+        time_point <- (n - 1) * time_interval
         row_range <- start:(start + (plate_format[1]-1))
         column_range <- 1:(plate_format[2] + 1)
 
@@ -47,35 +59,13 @@ read_varioscan <- function(xlsx_file,
         names(time_point_block) <- column_names
         time_point_block$dilution = dilutions
 
-        # convert to numeric
-        time_point_block <- time_point_block %>%
-            dplyr::mutate(across(where(is.character), as.numeric))
-
-        # background correction and averaging
-        time_point_block <- do_bc_correction_and_averaging(time_point_block)
-
-        # add time column
-        time_point_block$time = rep(time_point, nrow(time_point_block))
-
-        # pivot to long format
-        time_point_block <- time_point_block %>%
-            tidyr::pivot_longer(cols = -c(dilution, time),
-                                names_to = c("series", "replicate"),
-                                names_pattern = "(.+)_(.+)",
-                                values_to = "OD")
-
-        # converts integer interval to duration and adds date of experiment
-        time_point_block <- time_point_block %>%
-            dplyr::mutate(duration = lubridate::dhours(time / 60),
-                          start_date = start_date,
-                          #experiment_name = experiment_name
-                          ) %>%
-            dplyr::select(-time)
+        time_point_block <- process_raw_time_point_block(time_point_block,
+                                                         time_point,
+                                                         start_date)
 
         if(! is.null(metadata)) {
             time_point_block <- add_metadata(time_point_block, metadata)
         }
-        #return(time_point_block)
 
         all_data[[n]] <- time_point_block
     }
@@ -87,6 +77,39 @@ read_varioscan <- function(xlsx_file,
 
     return(all_data)
 }
+
+
+#' Processes a single time-point block
+#' Not exported helper function
+process_raw_time_point_block <- function(time_point_block, time_point, start_date) {
+    # convert to numeric
+    time_point_block <- time_point_block %>%
+        dplyr::mutate(across(where(is.character), as.numeric))
+
+    # background correction and averaging
+    time_point_block <- do_bc_correction_and_averaging(time_point_block)
+
+    # add time column
+    time_point_block$time = rep(time_point, nrow(time_point_block))
+
+    # pivot to long format
+    time_point_block <- time_point_block %>%
+        tidyr::pivot_longer(cols = -c(dilution, time),
+                            names_to = c("series", "replicate"),
+                            names_pattern = "(.+)_(.+)",
+                            values_to = "OD")
+
+    # converts integer interval to duration and adds date of experiment
+    time_point_block <- time_point_block %>%
+        dplyr::mutate(duration = lubridate::dhours(time / 60),
+                      start_date = start_date,
+                      #experiment_name = experiment_name
+        ) %>%
+        dplyr::select(-time)
+
+    return(time_point_block)
+}
+
 
 #not exported helper function
 extract_start_date <- function(xlsx_file, metadata_sheet) {
@@ -147,21 +170,25 @@ add_metadata <- function(time_point_block, metadata) {
         extract = ifelse(series == "Exp1", metadata$Extract[1], extract),
         extract = ifelse(series == "Exp2", metadata$Extract[2], extract),
         extract = ifelse(series == "Exp3", metadata$Extract[3], extract),
-        date_extracted = character(nrow(time_point_block)),
-        date_extracted = ifelse(series == "Exp1", metadata$Date_extracted[1], date_extracted),
-        date_extracted = ifelse(series == "Exp2", metadata$Date_extracted[2], date_extracted),
-        date_extracted = ifelse(series == "Exp3", metadata$Date_extracted[3], date_extracted),
-        medium = character(nrow(time_point_block)),
-        medium = ifelse(series == "Exp1", metadata$Medium[1], medium),
-        medium = ifelse(series == "Exp2", metadata$Medium[2], medium),
-        medium = ifelse(series == "Exp3", metadata$Medium[3], medium))
+        extract_id = character(nrow(time_point_block)),
+        extract_id = ifelse(series == "Exp1", metadata$Extract_ID[1], extract_id),
+        extract_id = ifelse(series == "Exp2", metadata$Extract_ID[2], extract_id),
+        extract_id = ifelse(series == "Exp3", metadata$Extract_ID[3], extract_id),
+        buffer_strength = character(nrow(time_point_block)),
+        buffer_strength = ifelse(series == "Exp1", metadata$Buffer_strength[1], buffer_strength),
+        buffer_strength = ifelse(series == "Exp2", metadata$Buffer_strength[2], buffer_strength),
+        buffer_strength = ifelse(series == "Exp3", metadata$Buffer_strength[3], buffer_strength),
+        pH_buffer = character(nrow(time_point_block)),
+        pH_buffer = ifelse(series == "Exp1", metadata$pH_buffer[1], pH_buffer),
+        pH_buffer = ifelse(series == "Exp2", metadata$pH_buffer[2], pH_buffer),
+        pH_buffer = ifelse(series == "Exp3", metadata$pH_buffer[3], pH_buffer))
     return(time_point_block)
 }
 
 #not exported helper function
 read_metadata <- function(xlsx_file, metadata_sheet) {
     metadata <- readxl::read_excel(xlsx_file,
-                                   range = paste0(metadata_sheet, "!A28:E31"))
+                                   range = paste0(metadata_sheet, "!A28:F31"))
     if(! "Extract" %in% names(metadata)) {
         warning("metadata not found (at correct position A28)")
         return(NULL)

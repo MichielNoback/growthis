@@ -11,6 +11,23 @@ xlsx_file <- paste0(here::here(), "/data-raw/", "S_aureus_30jan2020.xlsx")
 data <- read_varioscan(xlsx_file)
 
 
+metadata <- list(
+    experiment_name = "SMMK Growth Curve K pneumoniae 2maart2020",
+    date_started = "2020-03-02",
+    experiment_id = "Kpneu_20200302",
+    dilutions = c(0.02, 0.01, 0.005, 0.0025, 0.0013, 0.0006, 0.0003, 0.0),
+    series = tibble::tibble(
+        exp_id = c("Exp1", "Exp2", "Exp3"),
+        strain = c("K. pneumoniae", "K. pneumoniae", "K. pneumoniae"),
+        extract = c("Red Naomi_unkown", "White rose_unkown", "Elution control"),
+        date_extracted = c("00-00-0000", "00-00-0000", "00-00-0000"),
+        medium = c("NB1x_pH7.4", "NB1x_pH7.4", "NB1x_pH7.4")
+    )
+)
+
+
+
+
 wide_format <- coli_2021_12_02 %>%
     dplyr::filter(replicate %in% c("1C", "2C", "3C")) %>%
     dplyr::mutate(ID = paste(series, dilution, replicate, sep = "_"),
@@ -25,7 +42,6 @@ exclude_single <- list(
     dilution = 0.02,
     replicate = "1" #will remove both 1 and 1C
 )
-
 
 exclude_multiple <- list(
     list(
@@ -49,6 +65,14 @@ exclude_control <- list(
     replicate = "C" #need to recalculate the corrected values for all three replicates
 )
 
+
+
+exclude_single <- list(
+    start_date = "2-12-2021",
+    series = "Exp1",
+    dilution = 0.02,
+    replicate = "1" #will remove both 1 and 1C
+)
 
 
 

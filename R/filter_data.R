@@ -32,6 +32,19 @@
 #' )
 #' ```
 #'
+#' A special case is the removal of a control well (usually when infection has started to grow in it).
+#' When a control well is removed, all its values are replaced by its 2 hour value. Corrected values
+#' for the replicates will be recalculated.
+#'
+#' ```
+#' exclude_control <- list(
+#'     start_date = "2-12-2021",
+#'     series = "Exp1",
+#'     dilution = 0.02,
+#'     replicate = "C" #need to recalculate the corrected values for all three replicates
+#' )
+#' ```
+#'
 #' Optionally, a list-of lists can be provided with repeated definitions of items to exclude:
 #'
 #' ```
@@ -50,7 +63,6 @@
 #'     )
 #' )
 #' ```
-#'
 #'
 #' @export
 #'
@@ -96,13 +108,6 @@ filter_data <- function(data,
         } else { #single
             data <- exclude_data(data, exclude_wells)
         }
-        # data are excluded so averages should be recalculated
-        data <- data %>%
-            tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
-            dplyr::rowwise() %>%
-            dplyr::mutate(Avg = if(any(is.na(c(`1C`, `2C`, `3C`)))) mean(c(`1C`, `2C`, `3C`), na.rm = T) else Avg) %>%
-            tidyr::pivot_longer(cols = 9:16, names_to = "replicate", values_to = "OD") %>%
-            dplyr::select(dilution, series, replicate, OD, duration, start_date, strain, extract, date_extracted, medium)
     }
 
     return(data)
@@ -123,15 +128,61 @@ exclude_data <- function(data, exclude) {
     if (is.null(exclude$replicate)) stop("no replicate on exclude")
     if (length(exclude$replicate) != 1) stop("only one replicate allowed")
 
-    #expand to include controls
-    exclude$replicates <- c(exclude$replicate, paste0(exclude$replicate, "C"))
+    if (exclude$replicate == "C") {
+        message("excluding control")
 
-    data <- data %>%
-        dplyr::filter(
-            !(start_date == exclude$start_date &
-                  series == exclude$series &
-                  dilution == exclude$dilution &
-                  replicate %in% exclude$replicates))
+        ## determine new value for this well based on mean value of
+        ## 6000 <= t <= 8400
+        ODs_for_new_control <- data %>%
+            # tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
+            dplyr::filter(start_date == exclude$start_date &
+                          series == exclude$series &
+                          dilution == exclude$dilution &
+                          replicate == "C" &
+                          duration >=6000 & duration <= 8400) %>%
+            dplyr::pull(OD)
+        new_control_value <- mean(ODs_for_new_control)
+        #print(new_control_value)
+
+        ## now mutate to use the new control value
+        data <- data %>% dplyr::mutate(
+            OD = ifelse((start_date == exclude$start_date &
+                            series == exclude$series &
+                            dilution == exclude$dilution &
+                            replicate == "C"), new_control_value, OD))
+
+        ## and recalculate the corrected replicates and average
+        data <- data %>%
+            tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
+            dplyr::rowwise() %>%
+            dplyr::mutate(
+                `1C` = `1` - C,
+                `2C` = `2` - C,
+                `3C` = `3` - C,
+                Avg = mean(c(`1C`, `2C`, `3C`), na.rm = T)
+            ) %>%
+            tidyr::pivot_longer(cols = 9:16, names_to = "replicate", values_to = "OD") %>%
+            dplyr::select(dilution, series, replicate, OD, duration, start_date, strain, extract, date_extracted, medium)
+
+    } else {
+        message("excluding replicate")
+        #expand to include corrected values
+        exclude$replicates <- c(exclude$replicate, paste0(exclude$replicate, "C"))
+        data <- data %>%
+            dplyr::filter(
+                !(start_date == exclude$start_date &
+                      series == exclude$series &
+                      dilution == exclude$dilution &
+                      replicate %in% exclude$replicates))
+
+        # data are excluded so averages should be recalculated
+        data <- data %>%
+            tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
+            dplyr::rowwise() %>%
+            dplyr::mutate(Avg = if(any(is.na(c(`1C`, `2C`, `3C`)))) mean(c(`1C`, `2C`, `3C`), na.rm = T) else Avg) %>%
+            tidyr::pivot_longer(cols = 9:16, names_to = "replicate", values_to = "OD") %>%
+            dplyr::select(dilution, series, replicate, OD, duration, start_date, strain, extract, date_extracted, medium)
+    }
 
     return(data)
 }
