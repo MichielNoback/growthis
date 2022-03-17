@@ -161,9 +161,8 @@ exclude_data <- function(data, exclude) {
                 `3C` = `3` - C,
                 Avg = mean(c(`1C`, `2C`, `3C`), na.rm = T)
             ) %>%
-            tidyr::pivot_longer(cols = 9:16, names_to = "replicate", values_to = "OD") %>%
-            dplyr::select(dilution, series, replicate, OD, duration, start_date, strain, extract, date_extracted, medium)
-
+            tidyr::pivot_longer(cols = 10:17, names_to = "replicate", values_to = "OD") %>%
+            dplyr::select(dilution, series, replicate, OD, duration, start_date, strain, extract, extract_id, buffer_strength, pH_buffer)
     } else {
         message("excluding replicate")
         #expand to include corrected values
@@ -180,8 +179,8 @@ exclude_data <- function(data, exclude) {
             tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
             dplyr::rowwise() %>%
             dplyr::mutate(Avg = if(any(is.na(c(`1C`, `2C`, `3C`)))) mean(c(`1C`, `2C`, `3C`), na.rm = T) else Avg) %>%
-            tidyr::pivot_longer(cols = 9:16, names_to = "replicate", values_to = "OD") %>%
-            dplyr::select(dilution, series, replicate, OD, duration, start_date, strain, extract, date_extracted, medium)
+            tidyr::pivot_longer(cols = 10:17, names_to = "replicate", values_to = "OD") %>%
+            dplyr::select(dilution, series, replicate, OD, duration, start_date, strain, extract, extract_id, buffer_strength, pH_buffer)
     }
 
     return(data)

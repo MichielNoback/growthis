@@ -1,3 +1,11 @@
+#' Loads a single experiment from Rda file (from package package data)
+#'
+load_selected_experiment <- function(experiment_date_single) {
+    message_helper("loading", experiment_date_single)
+    return(get(experiment_date_single))
+}
+
+
 #' Reads experiment names to be used in the app
 #'
 #' @param xlsx_file An excel file with two columns: `file_name` and `experiment_name`

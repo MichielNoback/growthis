@@ -13,9 +13,13 @@ for (i in seq_len(nrow(experiment_data))) {
 
     xlsx_file <- paste0(here::here(), "/data-raw/", file_name)
     data <- read_varioscan(xlsx_file)
+    saveRDS(object = data,
+            file = paste0(here::here(), "experiment_data", ))
+
     assign(exp_name, data)
     do.call(eval(parse(text="usethis::use_data")),
             list(as.name(exp_name), overwrite = TRUE))
+    break
     #print(data)
 }
 

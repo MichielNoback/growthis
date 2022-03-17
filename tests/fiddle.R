@@ -10,6 +10,50 @@ data_wide <- coli %>%
 xlsx_file <- paste0(here::here(), "/data-raw/", "S_aureus_30jan2020.xlsx")
 data <- read_varioscan(xlsx_file)
 
+#get plate layout
+current_dataset %>%
+    dplyr::select(dilution, series, replicate, OD, duration) %>%
+    dplyr::filter(replicate %in% c("1", "2", "3", "C")) %>%
+    dplyr::group_by(dilution, series, replicate) %>%
+    dplyr::summarize(excluded = any(is.na(OD))) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(series_repl = paste0(series, "_", replicate)) %>%
+    dplyr::select(dilution, series_repl, excluded) %>%
+    dplyr::arrange(dplyr::desc(dilution)) %>%
+    tidyr::pivot_wider(names_from = series_repl, values_from = excluded)
+#print(n = 100)
+
+
+#return selection of clicked cells
+selection <- clicked_wells %>%
+    tidyr::pivot_longer(cols = -1, names_to = "exp", values_to = "glyph") %>%
+    dplyr::filter(grepl(pattern = "remove-sign", glyph)) %>%
+    tidyr::separate(col = exp, into = c("series", "replicate")) %>%
+    dplyr::select(-glyph)
+
+list_sel <- apply(X = selection,
+      MARGIN = 1,
+      FUN = function(x) list(dilution = x["dilution"], series = x["series"], replicate = x["replicate"]))
+
+list_sel
+
+
+apply(X = tbbl_selection,
+      MARGIN = 1,
+      FUN = function(x) list(
+          start_date = start_date_of_exp,
+          dilution = as.numeric(x["dilution"]),
+          series = x["series"],
+          replicate = x["replicate"]))
+
+
+#get cells that have (only) NAs
+current_dataset %>%
+    dplyr::filter(is.na(OD)) %>%
+    dplyr::group_by(dilution, series, replicate) %>%
+    dplyr::group_keys()
+
+
 
 metadata <- list(
     experiment_name = "SMMK Growth Curve K pneumoniae 2maart2020",
@@ -45,21 +89,32 @@ exclude_single <- list(
 
 exclude_multiple <- list(
     list(
-        start_date = "2-12-2021",
+        start_date = "2-3-2020",
         series = "Exp1",
         dilution = 0.02,
         replicate = "1" #will remove both 1 and 1C
     ),
     list(
-        start_date = "2-12-2021",
+        start_date = "2-3-2020",
         series = "Exp2",
         dilution = 0.01,
         replicate = "2" #will remove both 1 and 1C
+    ),
+    list(
+        start_date = "2-3-2020",
+        series = "Exp1",
+        dilution = 0.02,
+        replicate = "C" #need to recalculate the corrected values for all three replicates
     )
 )
 
+exclude_multiple_df <- as.data.frame(t(sapply(exclude_multiple, FUN = function(x) {c(start_date = x$start_date,
+                                              dilution = x$dilution,
+                                              series = x$series,
+                                              replicate = x$replicate)})))
+
 exclude_control <- list(
-    start_date = "2-12-2021",
+    start_date = "2-3-2020",
     series = "Exp1",
     dilution = 0.02,
     replicate = "C" #need to recalculate the corrected values for all three replicates
@@ -68,7 +123,7 @@ exclude_control <- list(
 
 
 exclude_single <- list(
-    start_date = "2-12-2021",
+    start_date = "2-3-2020",
     series = "Exp1",
     dilution = 0.02,
     replicate = "1" #will remove both 1 and 1C
@@ -76,25 +131,40 @@ exclude_single <- list(
 
 
 
+
 data <- coli_2021_12_02
 exclude <- exclude_multiple
 #exclude$replicates <- c(exclude$replicate, paste0(exclude$replicate, "C"))
 
-print(data %>% dplyr::filter(
-    !(start_date == exclude$start_date &
-          series == exclude$series &
-          dilution == exclude$dilution &
-          replicate %in% exclude$replicates)), n = 30)
 
 
-#    (replicate %in% exclude$replicates))
 
-data %>%
-    dplyr::filter(!(start_date == exclude$start_date) #&&
-                   #series == exclude$series)# &&
-                  # dilution != exclude$diluton &&
-                  # !(replicate %in% exclude$replicates)
-    )
+start_date_of_exp <- "2-3-2020"
+data <- load_selected_experiment("2-3-2020")
+nrow(data)
+exclude <- selected_wells[[1]]
+
+exclude$replicates <- c(exclude$replicate, paste0(exclude$replicate, "C"))
+data <- data %>%
+    dplyr::filter(
+        !(start_date == exclude$start_date &
+              series == exclude$series &
+              dilution == exclude$dilution &
+              replicate %in% exclude$replicates))
+nrow(data)
+
+# data are excluded so averages should be recalculated
+tmp <- data %>%
+    tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(Avg = if(any(is.na(c(`1C`, `2C`, `3C`)))) mean(c(`1C`, `2C`, `3C`), na.rm = T) else Avg) %>%
+    tidyr::pivot_longer(cols = 10:17, names_to = "replicate", values_to = "OD") %>%
+    dplyr::select(dilution, series, replicate, OD, duration, start_date, strain, extract, extract_id, buffer_strength, pH_buffer)
+
+
+
+
+
 
 
 

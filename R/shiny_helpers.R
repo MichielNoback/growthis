@@ -12,7 +12,7 @@ prepare_stats_data_download <- function(growth_params) {
 #' @param data the varioscan data tibble
 #'
 available_experiment_dates <- function(data) {
-    unique(data$start_date)
+    unique(data$experiment_date)
 }
 
 #' serves available extracts of the dataset for the given experiments
