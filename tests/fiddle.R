@@ -147,7 +147,7 @@ exclude <- selected_wells[[1]]
 exclude$replicates <- c(exclude$replicate, paste0(exclude$replicate, "C"))
 data <- data %>%
     dplyr::filter(
-        !(start_date == exclude$start_date &
+        !(start_date == exclude$start_date))# &
               series == exclude$series &
               dilution == exclude$dilution &
               replicate %in% exclude$replicates))

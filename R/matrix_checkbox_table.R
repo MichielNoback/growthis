@@ -7,7 +7,7 @@ load_test_dataset <- function() {
     # current_dataset <<- load_selected_experiment(start_date_of_exp)
 
     #or, with removed wells:
-    current_dataset <<- get(load(paste0(here::here(), "/data-raw/dataset_with_excluded.rda")))
+    get(load(paste0(here::here(), "/data-raw/dataset_with_excluded.rda")))
 }
 
 well_selection_box <- shinydashboard::box(id = "well_selection_div",
@@ -59,7 +59,7 @@ get_clickable_plate_layout <- function(ui_glyphs, plate_layout) {
 
 
 get_selected_wells <- function(wells, start_date_of_exp) {
-    tbbl_selection <- wells %>%
+    tbbl_selection <<- wells %>%
         tidyr::pivot_longer(cols = -1, names_to = "exp", values_to = "glyph") %>%
         dplyr::filter(grepl(pattern = "remove-sign", glyph)) %>%
         tidyr::separate(col = exp, into = c("series", "replicate")) %>%
@@ -90,7 +90,9 @@ ui <- shiny::fluidPage(
 )
 
 server <- function(input, output, session) {
-    load_test_dataset()
+
+
+    current_dataset <- load_test_dataset()
     ui_glyphs <- get_ui_glyphs()
     plate_layout <- get_plate_layout(current_dataset)
     clickable_plate_layout <- get_clickable_plate_layout(ui_glyphs, plate_layout)
@@ -101,13 +103,24 @@ server <- function(input, output, session) {
         wells = clickable_plate_layout
     )
 
+
+    user_data <- shiny::reactiveValues(
+        filtered_data = dplyr::tibble(),
+        selected_experiment = current_dataset,
+        growth_params_single = dplyr::tibble()
+    )
+
+
+
+
     #The proxy to update the DT
     proxy <- DT::dataTableProxy(outputId = 'well_selection')
 
 
     #Update the table when clicked
-    shiny::observeEvent(shiny::req(input$well_selection_cells_selected), {
-
+    shiny::observeEvent(input$well_selection_cells_selected, {
+        message("icon clicked")
+        shiny::req(input$well_selection_cells_selected)
 
         # WEIRD THIS DOES SUDDENLY NOT WORK ANYMORE:
         # plate_layout_reactive$wells[input$well_selection_cells_selected]
@@ -125,12 +138,13 @@ server <- function(input, output, session) {
     shiny::observeEvent(input$remove_wells_button, {
         message("removing indices")
 
-        #first locate selected wells
         selected_wells <- get_selected_wells(plate_layout_reactive$wells, start_date_of_exp)
-        modified_dataset <- filter_data(current_dataset, exclude_wells = selected_wells)
+        print(user_data$current_dataset)
+        modified_dataset <- filter_data(user_data$current_dataset, exclude_wells = selected_wells)
         new_plate_layout <- get_plate_layout(modified_dataset)
+        print(new_plate_layout)
         new_clickable_plate_layout <- get_clickable_plate_layout(ui_glyphs, new_plate_layout)
-
+        #print(new_clickable_plate_layout)
         plate_layout_reactive$wells <- new_clickable_plate_layout
         DT::replaceData(proxy, plate_layout_reactive$wells)
     })
