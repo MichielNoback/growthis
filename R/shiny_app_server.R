@@ -14,12 +14,6 @@ shiny_app <- function() {
 shiny_app_server <- function(input, output, session) {
     ui_glyphs <- get_ui_glyphs()
 
-#    current_dataset <- load_test_dataset()
-
-    # plate_layout <- get_plate_layout(current_dataset)
-    # clickable_plate_layout <- get_clickable_plate_layout(ui_glyphs, plate_layout)
-
-
     #The reactive version of the data
     plate_layout_reactive = shiny::reactiveValues(
         wells = dplyr::tibble() #clickable_plate_layout
@@ -41,37 +35,33 @@ shiny_app_server <- function(input, output, session) {
                                  choices = all_experiment_dates)
     })
 
-    #only take action when the button is clicked
-    shiny::observeEvent(input$show_graph_single, {
+    shiny::observe({
+        shiny::req(input$local_varioscan_excel)
+        message_helper("reading upload", input$local_varioscan_excel$datapath)
+        user_data$selected_experiment <- read_varioscan(input$local_varioscan_excel$datapath)
+    })
+
+    shiny::observe({
         shiny::req(input$experiment_date_single)
-
         message_helper("displaying experiment date", input$experiment_date_single)
-
         user_data$selected_experiment <- load_selected_experiment(input$experiment_date_single)
+    })
+
+    #only take action when the button is clicked
+    shiny::observe({
         #print(user_data$selected_experiment)
-
-        output$growthcurve_plot_single <- renderPlot({
-            plot_growthcurves(varioscan_data = user_data$selected_experiment,
-                              plot_type = input$graph_type_single)
-        })
-
-
-        plate_layout <- get_plate_layout(user_data$selected_experiment)
-        clickable_plate_layout <- get_clickable_plate_layout(ui_glyphs, plate_layout)
-        plate_layout_reactive$wells <- clickable_plate_layout
-
-        #show well selection box
-        #shinyjs::toggle("well_selection_box_wrapper")
+        shiny::req(user_data$selected_experiment)
+        if (nrow(user_data$selected_experiment > 1)) {
+            output$growthcurve_plot_single <- renderPlot({
+                plot_growthcurves(varioscan_data = user_data$selected_experiment,
+                                  plot_type = input$graph_type_single)
+            })
 
 
-        # user_data$growth_params_single <- do_growth_analysis(user_data$selected_experiment)
-        #
-        # output$growth_params_single <- DT::renderDataTable({
-        #     DT::datatable(user_data$growth_params_single,
-        #                   options = list(dom = 'tp', pageLength = 20)) %>%
-        #         DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
-        #         DT::formatSignif(columns = c(8,9,11,14), digits = 2)
-        # })
+            plate_layout <- get_plate_layout(user_data$selected_experiment)
+            clickable_plate_layout <- get_clickable_plate_layout(ui_glyphs, plate_layout)
+            plate_layout_reactive$wells <- clickable_plate_layout
+        }
     })
 
     #The proxy to update the DT
@@ -100,17 +90,11 @@ shiny_app_server <- function(input, output, session) {
         message("removing indices")
 
         selected_wells <- get_selected_wells(plate_layout_reactive$wells, dplyr::pull(user_data$selected_experiment, start_date)[1])
-        #print(selected_wells)
         current_dataset <- user_data$selected_experiment
-        #print(user_data$selected_experiment)
         modified_dataset <- filter_data(user_data$selected_experiment, exclude_wells = selected_wells)
-        #print(modified_dataset)
         user_data$selected_experiment <- modified_dataset
-
         new_plate_layout <- get_plate_layout(modified_dataset)
-        #print(new_plate_layout)
         new_clickable_plate_layout <- get_clickable_plate_layout(ui_glyphs, new_plate_layout)
-        #print(new_clickable_plate_layout)
         plate_layout_reactive$wells <- new_clickable_plate_layout
         DT::replaceData(proxy, plate_layout_reactive$wells)
     })

@@ -64,17 +64,24 @@ single_exp_tab <- shiny::fluidPage(
     shiny::sidebarLayout(
         shiny::sidebarPanel(
             width = 3, #total = 12
-            #shiny::h4("Make selection"),
+            #shiny::h5("Make selection of available experiments"),
             shinyWidgets::pickerInput(inputId = "experiment_date_single",
-                                      label = "Experiment name",
+                                      label = "Use from available",
                                       width = 150,
                                       multiple = FALSE,
                                       choices = NULL,
                                       options = list(title = "Choose experiment")),
-            shiny::actionButton(inputId = "show_graph_single",
-                                label = "Show graph",
-                                icon = shiny::icon("chart-area"),
-                                width = 150),
+
+            #shiny::h5("Or upload from your hard drive"),
+            # Input: Select a file ----
+            shiny::fileInput("local_varioscan_excel", "Or upload from your hard drive",
+                      multiple = FALSE,
+                      accept = c("xls", "xlsx")),
+
+            # shiny::actionButton(inputId = "show_graph_single",
+            #                     label = "Show graph",
+            #                     icon = shiny::icon("chart-area"),
+            #                     width = 150),
             # shiny::actionButton(inputId = "overwrite_single_experiment",
             #                     label = "Overwrite",
             #                     icon = shiny::icon("save"),

@@ -25,7 +25,9 @@ Imports:
     growthcurver,
     DT,
     here,
-    shinyjs
+    shinyjs,
+    tidyr,
+    magrittr
 Depends: 
     R (>= 2.10)
 LazyData: true

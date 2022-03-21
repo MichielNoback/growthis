@@ -21,10 +21,9 @@ This package can be used to view, edit and analyse Varioscan growth experiment d
 1. Start RStudio, go to the console
 2. Install the package devtools if not already present: `install.packages("devtools")`
 3. Load devtools: `library(devtools)`
-4. Install package `growthis`: `install_github("MichielNoback/growthis")`. This will probably ask you to update some or quite a few packages. 
-   Preferably select `All` (option 1). This may take a while...
+4. Install package `growthis`: `install_github("MichielNoback/growthis")`. This will probably ask you to update some (or quite a few) packages. 
+   Preferably select `All` (option 1). This may take a while.
 5. Load growthis: `library(growthis)`.
-6. Load dplyr: `library(dplyr)`. This is an unfortinate hack to prevent the `Warning: Error in %>%: could not find function "%>%"` error.
 6. Test-run the Shiny app: `shiny_app()`.
    You may get an error message like this:
    
@@ -39,7 +38,7 @@ This package can be used to view, edit and analyse Varioscan growth experiment d
     Error in loadNamespace(i, c(lib.loc, .libPaths()), versionCheck = vI[[i]]) : 
       namespace ‘rlang’ 0.4.12 is already loaded, but >= 1.0.0 is required
     ```
-   If so, quit the Shiny app (Not RStudio!; press escape one or two times in the console) and run the command `install.packages("rlang")`.
+   If so, quit the Shiny app (not RStudio!; press escape one or two times in the console) and run the command `install.packages("rlang")`.
    You may have to repeat for other packages that are used by growthis. 
 
 
@@ -56,4 +55,4 @@ The main functions are:
 - `do_growth_analysis()` will give growth statistics. This requires the input of data in "wide" format; the function `create_wide_data()` does exactly that.
 
 
-In the console, type `?<function name>` to get detaisl on their usage.
+In the console, type `?<function name>` to get details on their usage.
