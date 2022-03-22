@@ -73,7 +73,18 @@ Alternatively, you can start the app in one command: `growthis::shiny_app()` and
 You can quit the app by pressing the Escape key in the Console. The browser tab should be closed as well. It is not active anymore.
 
 
-### Usage of the `growthis` package functions.
+### Updating the `growthis` package
+
+The package is in development and releases follow each other frequently.
+You can update the current package by typing the following in the Console:
+
+1. Type `library(devtools)` and press Enter.
+2. Type `install_github("MichielNoback/growthis")` and press Enter. 
+
+This will update the package to the most recent version.
+
+
+### Usage of the other `growthis` package functions.
 
 If you are prepared to use R, several functions are at your disposal. Type `library(growthis)` to get it in the current session. Type `growthis::` in the console and you will see all available datasets and functions. All functions have within-R documentation. You can see these in the Help panel when you type `?functions_name` in the Console (in RStudio of course).  
 The main functions are:
