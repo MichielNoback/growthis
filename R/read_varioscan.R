@@ -1,7 +1,7 @@
 #' Loads a single experiment from Rda file (from package package data)
 #'
 load_selected_experiment <- function(experiment_date_single) {
-    message_helper("loading", experiment_date_single)
+    #message_helper("loading", experiment_date_single)
     return(get(experiment_date_single))
 }
 
@@ -46,7 +46,7 @@ read_varioscan <- function(xlsx_file,
     # process metadata
     metadata <- read_metadata(xlsx_file, metadata_sheet)
 
-    data <- readxl::read_excel(xlsx_file, sheet = data_sheet)
+    data <- suppressMessages(readxl::read_excel(xlsx_file, sheet = data_sheet))
 
     # iterate blocks with timepoints
     rows <- nrow(data)
@@ -78,7 +78,8 @@ read_varioscan <- function(xlsx_file,
         all_data[[n]] <- time_point_block
     }
     # bind them all
-    all_data <- do.call(rbind, all_data)
+    all_data <- data.table::rbindlist(all_data)
+    #all_data <- do.call(rbind, all_data)
 
     # finally remove all "discard" data
     all_data <- all_data %>% dplyr::filter(strain != "discard")
@@ -121,9 +122,9 @@ process_raw_time_point_block <- function(time_point_block, time_point, start_dat
 
 #not exported helper function
 extract_start_date <- function(xlsx_file, metadata_sheet) {
-    start_date_cell <- readxl::read_excel(xlsx_file,
+    start_date_cell <- suppressMessages(readxl::read_excel(xlsx_file,
                                           range = paste0(metadata_sheet, "!F9"),
-                                          col_names = FALSE)
+                                          col_names = FALSE))
     start_date <- as.character(unlist(strsplit(start_date_cell$...1, split = " "))[1])
     return(start_date)
 }
@@ -195,8 +196,8 @@ add_metadata <- function(time_point_block, metadata) {
 
 #not exported helper function
 read_metadata <- function(xlsx_file, metadata_sheet) {
-    metadata <- readxl::read_excel(xlsx_file,
-                                   range = paste0(metadata_sheet, "!A28:F31"))
+    metadata <- suppressMessages(readxl::read_excel(xlsx_file,
+                                   range = paste0(metadata_sheet, "!A28:F31")))
     if(! "Extract" %in% names(metadata)) {
         warning("metadata not found (at correct position A28)")
         return(NULL)

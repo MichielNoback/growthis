@@ -14,42 +14,133 @@ shiny_app <- function() {
 shiny_app_server <- function(input, output, session) {
     ui_glyphs <- get_ui_glyphs()
 
-    #The reactive version of the data
+    #The reactive version of the plate layout
     plate_layout_reactive = shiny::reactiveValues(
         wells = dplyr::tibble() #clickable_plate_layout
     )
 
     # STORE USER SELECTIONS
     user_data <- shiny::reactiveValues(
-        filtered_data = dplyr::tibble(),
+        filtered_data_multi = dplyr::tibble(),
         selected_experiment = dplyr::tibble(),
-        growth_params_single = dplyr::tibble()
+        selected_experiments_multi = dplyr::tibble(),
+        growth_params_single = dplyr::tibble(),
+        growth_params_multi = dplyr::tibble(),
     )
 
-    #only runs at start of session
+    ## only runs at start of session
     shiny::observe({
         message("updating experiment dates")
         all_experiment_dates <- available_experiment_dates(growthis::experiment_data)
         shinyWidgets::updatePickerInput(session,
                                  inputId = "experiment_date_single",
                                  choices = all_experiment_dates)
+        shinyWidgets::updatePickerInput(session,
+                                        inputId = "experiment_date_multiple",
+                                        choices = all_experiment_dates)
     })
 
+    ## an excel file is uploaded with varioscan data
     shiny::observe({
         shiny::req(input$local_varioscan_excel)
-        message_helper("reading upload", input$local_varioscan_excel$datapath)
+        message_helper("reading uploaded file", input$local_varioscan_excel$datapath)
         user_data$selected_experiment <- read_varioscan(input$local_varioscan_excel$datapath)
     })
 
+    ## A built-in dataset was selected
     shiny::observe({
         shiny::req(input$experiment_date_single)
-        message_helper("displaying experiment date", input$experiment_date_single)
+        message_helper("displaying experiment data", input$experiment_date_single)
         user_data$selected_experiment <- load_selected_experiment(input$experiment_date_single)
     })
 
-    #only take action when the button is clicked
+
+    ## listens to changes in experiment selections of multi experiment viewer
+    shiny::observeEvent(input$experiment_date_multiple, {
+        message_helper("multi experiment selection changed", input$experiment_date_multiple)
+
+        ## Load requested datasets
+        all_data <- list()
+
+        for (exp_date in input$experiment_date_multiple) {
+            message_helper("loading", exp_date)
+            exp <- load_selected_experiment(exp_date)
+            all_data[[exp_date]] <- exp
+        }
+        user_data$selected_experiments_multi <- data.table::rbindlist(all_data) #do.call(rbind, all_data)
+    })
+
+    ## When one or more local files were uploaded they have to be added to the current selection
+    shiny::observeEvent(input$local_varioscan_excel_multi$datapath, {
+        shiny::req(input$local_varioscan_excel_multi$datapath)
+
+        all_data <- list()
+        for (uploaded_file in input$local_varioscan_excel_multi$datapath) {
+            message_helper("loading", uploaded_file)
+            exp <- read_varioscan(uploaded_file)
+            exp_date <- exp$start_date[1]
+            all_data[[exp_date]] <- exp
+        }
+        all_data <- data.table::rbindlist(all_data)
+        ## append if already with data from built-in selection
+        if(nrow(user_data$selected_experiments_multi) > 1) {
+            user_data$selected_experiments_multi <- rbind(user_data$selected_experiments_multi, all_data)
+        } else {
+            user_data$selected_experiments_multi <- all_data
+        }
+    })
+
+    ## listens to changes in the user_data$selected_experiments_multi dataset
     shiny::observe({
-        #print(user_data$selected_experiment)
+        shiny::req(user_data$selected_experiments_multi)
+        all_extracts <- available_extracts(user_data$selected_experiments_multi)
+        all_strains <- available_strains(user_data$selected_experiments_multi)
+
+        shiny::updateCheckboxGroupInput(session,
+                                        inputId = "extracts_multiple",
+                                        choices = all_extracts,
+                                        selected = all_extracts)
+
+        shiny::updateCheckboxGroupInput(session,
+                                        inputId = "strains_multiple",
+                                        choices = all_strains,
+                                        selected = all_strains)
+    })
+
+
+    ## Only take action when the button is clicked in the multi experiment viewer
+    ## to show the graph and prepare combined data
+    shiny::observeEvent(input$show_graph_multiple, {
+        shiny::req(input$strains_multiple, input$extracts_multiple)
+
+        message("====================")
+        message_helper("experiment dates", input$experiment_date_multiple)
+        message_helper("extracts", input$extracts_multiple)
+        message_helper("strains", input$strains_multiple)
+        message_helper("graph_type", input$graph_type_multiple)
+        message("====================")
+
+
+        user_data$filtered_data_multi <- filter_data(data = user_data$selected_experiments_multi,
+                            extracts = input$extracts_multiple,
+                            strains = input$strains_multiple)
+
+        output$growthcurve_plot_multiple <- renderPlot({
+            plot_growthcurves(varioscan_data = user_data$filtered_data_multi,
+                              plot_type = input$graph_type_multiple)
+        })
+        user_data$growth_params_multi <- do_growth_analysis(user_data$filtered_data_multi)
+
+        output$growth_params_multiple <- DT::renderDataTable({
+            DT::datatable(user_data$growth_params_multi,
+                          options = list(dom = 'tp', pageLength = 20)) %>%
+                DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
+                DT::formatSignif(columns = c(8,9,11,14), digits = 2)
+        })
+    })
+
+    ## listens to experiment selection changes as reactive of user_data$selected experiment
+    shiny::observe({
         shiny::req(user_data$selected_experiment)
         if (nrow(user_data$selected_experiment > 1)) {
             output$growthcurve_plot_single <- renderPlot({
@@ -57,20 +148,17 @@ shiny_app_server <- function(input, output, session) {
                                   plot_type = input$graph_type_single)
             })
 
-
             plate_layout <- get_plate_layout(user_data$selected_experiment)
             clickable_plate_layout <- get_clickable_plate_layout(ui_glyphs, plate_layout)
             plate_layout_reactive$wells <- clickable_plate_layout
         }
     })
 
-    #The proxy to update the DT
+    ## The proxy to update the DT
     proxy <- DT::dataTableProxy(outputId = 'well_selection')
 
-
-    #Update the well selection box table when clicked
+    ## Update the well selection box table (glyplicon) when clicked
     shiny::observeEvent(input$well_selection_cells_selected, {
-        #message("icon clicked")
         shiny::req(input$well_selection_cells_selected)
 
         # WEIRD THIS DOES SUDDENLY NOT WORK ANYMORE:
@@ -86,10 +174,12 @@ shiny_app_server <- function(input, output, session) {
         DT::replaceData(proxy, plate_layout_reactive$wells)
     })
 
+    ## Wells were selected for removal in the well selection grid
     shiny::observeEvent(input$remove_wells_button, {
         message("removing indices")
 
-        selected_wells <- get_selected_wells(plate_layout_reactive$wells, dplyr::pull(user_data$selected_experiment, start_date)[1])
+        selected_wells <- get_selected_wells(plate_layout_reactive$wells,
+                                             dplyr::pull(user_data$selected_experiment, start_date)[1])
         current_dataset <- user_data$selected_experiment
         modified_dataset <- filter_data(user_data$selected_experiment, exclude_wells = selected_wells)
         user_data$selected_experiment <- modified_dataset
@@ -100,7 +190,7 @@ shiny_app_server <- function(input, output, session) {
     })
 
 
-    #The "checkbox" table
+    ## The well selection grid (table)
     output$well_selection = DT::renderDataTable(
         plate_layout_reactive$wells,
         #clickable_plate_layout,
@@ -117,7 +207,7 @@ shiny_app_server <- function(input, output, session) {
         fillContainer = FALSE
     )
 
-    # Downloadable csv of selected dataset
+    ## Downloadable csv of selected dataset
     output$data_download_single <- shiny::downloadHandler(
         filename = function() {
             paste0("growthis_dataset_",
@@ -130,9 +220,7 @@ shiny_app_server <- function(input, output, session) {
         }
     )
 
-    # button id = show_statistics_single
-    # table id = growth_params_single
-    #only take action when the button is clicked
+    ## only take action when the button is clicked
     shiny::observeEvent(input$show_statistics_single, {
         shiny::req(input$show_statistics_single)
 
@@ -149,7 +237,7 @@ shiny_app_server <- function(input, output, session) {
     })
 
 
-    # Downloadable csv of statistics of selected dataset
+    ## Downloadable csv of statistics of selected dataset
     output$growth_statistics_single_download <- shiny::downloadHandler(
         filename = function() {
             paste0("growthis_statistics_",
@@ -160,92 +248,5 @@ shiny_app_server <- function(input, output, session) {
         }
     )
 }
-
-
-#below removed but saved for now
-
-    # shiny::observeEvent(input$experiment_dates, {
-    #     message_helper("experiment selection changed", input$experiment_dates)
-    #     all_extracts <- available_extracts(varioscan_data, input$experiment_dates)
-    #     all_strains <- available_strains(varioscan_data, input$experiment_dates)
-    #
-    #     shiny::updateCheckboxGroupInput(session,
-    #                             inputId = "extracts",
-    #                             choices = all_extracts,
-    #                             selected = all_extracts)
-    #
-    #     shiny::updateCheckboxGroupInput(session,
-    #                             inputId = "strains",
-    #                             choices = all_strains,
-    #                             selected = all_strains)
-    # })
-
-    #only take action when the button is clicked
-    # shiny::observeEvent(input$show_graph, {
-    #     shiny::req(input$strains, input$extracts)
-    #
-    #     message("====================")
-    #     message_helper("experiment dates", input$experiment_dates)
-    #     message_helper("extracts", input$extracts)
-    #     message_helper("strains", input$strains)
-    #     message_helper("graph_type", input$graph_type)
-    #     message("====================")
-    #
-    #
-    #     experiment_dates <<- input$experiment_dates
-    #
-    #     user_data$filtered_data <- filter_data(data = varioscan_data,
-    #                         extracts = input$extracts,
-    #                         strains = input$strains,
-    #                         experiment_dates = input$experiment_dates)
-    #
-    #     message_helper("data filtered", unique(user_data$filtered_data$start_date))
-    #     #filtered_data <<- user_data$filtered_data
-    #
-    #     output$growthcurve_plot <- renderPlot({
-    #         plot_growthcurves(varioscan_data = user_data$filtered_data,
-    #                           plot_type = input$graph_type)
-    #     })
-    #
-    #     user_data$growth_params <- do_growth_analysis(user_data$filtered_data)
-    #
-    #     output$growth_params <- DT::renderDataTable({
-    #         DT::datatable(user_data$growth_params,
-    #                       options = list(dom = 'tp', pageLength = 20)) %>%
-    #             DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
-    #             DT::formatSignif(columns = c(8,9,11,14), digits = 2)
-    #     })
-    # })
-
-    # Downloadable csv of selected dataset
-    # output$data_download <- shiny::downloadHandler(
-    #     filename = function() {
-    #         paste0("growthis_data_download_",
-    #                lubridate::today(), ".csv")
-    #     },
-    #     content = function(file) {
-    #         filtered_data <- filter_data(data = varioscan_data,
-    #                         extracts = input$extracts,
-    #                         strains = input$strains,
-    #                         experiment_dates = input$experiment_dates)
-    #         write.csv(filtered_data, file, row.names = FALSE)
-    #     }
-    # )
-
-    # output$growth_statistics_download <- shiny::downloadHandler(
-    #     filename = function() {
-    #         paste0("growthis_statistics_",
-    #                lubridate::today(), ".csv")
-    #     },
-    #     content = function(file) {
-    #         write.csv(user_data$growth_params,
-    #                   file,
-    #                   row.names = FALSE)
-    #     }
-    # )
-#}
-
-
-
 
 

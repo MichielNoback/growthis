@@ -70,8 +70,10 @@ create_controls_plot <- function(data) {
 
 #not exported helper function
 get_series_palette <- function() {
-    my_palette <- RColorBrewer::brewer.pal(9, "OrRd")
-    my_palette <- c("#3182BD", my_palette[3:9]) # first one is blue for 0%
+    #my_palette <- RColorBrewer::brewer.pal(8, "YlOrBr")[2:8]
+    #my_palette <- viridis::magma(9)[-c(1, 9)]
+    my_palette <- viridis::inferno(8)[-1]
+    my_palette <- c("#3182BD", my_palette) # first one is blue for 0%
     return(my_palette)
 }
 

@@ -1,8 +1,19 @@
-#' A dataset from the Varioscan 96-well growth curve reader.
+#' The experiments, with their dates and descriptions
 #'
-#' An example dataset containing growth curves of a 96-well dose-response experiment.
+#' There are multiple indivdual datasets available that are not documented individually.
+#' They are identified by their run date. Simply type growthis:: in the console to discover them, or use the Shiny app.
+#'
+#' @format A tibble frame with 20,928 rows and 10 variables, in long format
+#' \describe{
+#'   \item{file_name}{the name of the excel file with raw varioscan data and experiment metadata}
+#'   \item{experiment_date}{the date on which the experimen was run. This identifies the dataset uniquely}
+#'   \item{description}{A short description of the experiment}
+#' }
+#'
+#' All individual datasets have this format:
+#'
 #' The plate has a 8 rows * 12 columns layout.
-#' The experiment was set up in three blocks of 4 columns each, see picture below.
+#' The experiments were set up in three blocks of 4 columns each, see picture below.
 #'  \figure{varioscan_layout.png}{options: width=90\%}
 #'
 #' @format A tibble frame with 20,928 rows and 10 variables, in long format
@@ -15,19 +26,10 @@
 #'   \item{start_date}{a lubridate Date  object.the start date of the experiment}
 #'   \item{strain}{the bacterial strain used in the growth experiment}
 #'   \item{extract}{the extract used for the dilution series}
-#'   \item{date_extracted}{the date when the extract was prepared}
-#'   \item{medium}{the medium used to grow the bacteria}
+#'   \item{extract_id}{the the ID of the extract}
+#'   \item{buffer_strength}{the strength of the medium buffer}
+#'   \item{pH_buffer}{the initial pH of the medium}
 #' }
 #'
-"varioscan"
-
-#' The experiments, with their dates and descriptions
-#'
-#' @format A tibble frame with 20,928 rows and 10 variables, in long format
-#' \describe{
-#'   \item{file_name}{the name of the excel file with raw varioscan data and experiment metadata}
-#'   \item{experiment_date}{the date on which the experimen was run. This identifies the dataset uniquely}
-#'   \item{description}{A short description of the experiment}
-#' }
 #'
 "experiment_data"

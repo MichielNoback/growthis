@@ -2,15 +2,13 @@
 % Please edit documentation in R/shiny_helpers.R
 \name{available_extracts}
 \alias{available_extracts}
-\title{serves available extracts of the dataset for the given experiments}
+\title{serves available extracts within the dataset}
 \usage{
-available_extracts(data, experiment_dates)
+available_extracts(data)
 }
 \arguments{
 \item{data}{the varioscan data tibble}
-
-\item{the}{experiments}
 }
 \description{
-serves available extracts of the dataset for the given experiments
+serves available extracts within the dataset
 }

@@ -27,7 +27,9 @@ Imports:
     here,
     shinyjs,
     tidyr,
-    magrittr
+    magrittr,
+    viridis,
+    data.table
 Depends: 
     R (>= 2.10)
 LazyData: true

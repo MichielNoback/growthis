@@ -2,13 +2,13 @@
 % Please edit documentation in R/shiny_helpers.R
 \name{available_strains}
 \alias{available_strains}
-\title{serves available strains of the dataset}
+\title{serves available strains within the dataset}
 \usage{
-available_strains(data, experiment_dates)
+available_strains(data)
 }
 \arguments{
 \item{data}{the varioscan data tibble}
 }
 \description{
-serves available strains of the dataset
+serves available strains within the dataset
 }

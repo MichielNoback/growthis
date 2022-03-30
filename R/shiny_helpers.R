@@ -67,7 +67,6 @@ get_selected_wells <- function(wells, start_date_of_exp) {
 
 #' prepares the growth parameters dataframe, as
 prepare_stats_data_download <- function(growth_params) {
-
     growth_params %>% tidyr::separate()
 }
 
@@ -80,26 +79,21 @@ available_experiment_dates <- function(data) {
     unique(data$experiment_date)
 }
 
-#' serves available extracts of the dataset for the given experiments
+#' serves available extracts within the dataset
 #'
 #' @param data the varioscan data tibble
-#' @param the experiments
 #'
-available_extracts <- function(data, experiment_dates) {
-    data %>% dplyr::filter(start_date %in% experiment_dates) %>%
-        dplyr::pull(extract) %>%
-        unique()
+available_extracts <- function(data) {
+    if(nrow(data) > 0) data %>% dplyr::pull(extract) %>% unique()
 }
 
 
-#' serves available strains of the dataset
+#' serves available strains within the dataset
 #'
 #' @param data the varioscan data tibble
 #'
-available_strains <- function(data, experiment_dates) {
-    data %>% dplyr::filter(start_date %in% experiment_dates) %>%
-    dplyr::pull(strain) %>%
-    unique()
+available_strains <- function(data) {
+    if(nrow(data) > 0) data %>% dplyr::pull(strain) %>% unique()
 }
 
 
