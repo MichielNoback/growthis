@@ -20,7 +20,7 @@ determine_growth_params <- function(wide_format_data) {
         extracted_data <- c(
             "AUC_l" = fit_data$vals$auc_l,
             "AUC_e" = fit_data$vals$auc_e,
-            "AUC_l/e" = (fit_data$vals$auc_l / fit_data$vals$auc_e),
+            "AUC_le_rat" = (fit_data$vals$auc_l / fit_data$vals$auc_e),
             "K" = fit_data$vals$k,
             "N0" = fit_data$vals$n0,
             "DT" = fit_data$vals$t_gen,

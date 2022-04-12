@@ -108,10 +108,3 @@ available_strains <- function(data) {
 message_helper <- function(message_text, vector) {
     message(paste0(message_text, ": ", paste(vector, collapse = " -+- ")))
 }
-
-#' serves bar
-#'
-#' @export
-bar <- function() {
-    print("bar")
-}

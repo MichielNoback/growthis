@@ -8,7 +8,18 @@ single_statistics_tab <- shiny::fluidPage(
                         width = 150),
     shiny::downloadButton(outputId = "growth_statistics_single_download",
                                       label = "Download as csv"),
-    DT::dataTableOutput(outputId = "growth_params_single")
+    DT::dataTableOutput(outputId = "growth_params_single"),
+    br(),
+    shiny::h4("Visualize"),
+    shiny::radioButtons(inputId = "growth_params_plot_scaled_single",
+                                   label =  "Scale data",
+                                   choices = c("yes", "no"),
+                                   selected = "no",
+                                   inline = TRUE),
+    shiny::selectInput(inputId = "growth_params_plot_variable_single",
+                       label = "Select a variable",
+                       choices = NULL),
+    plotly::plotlyOutput("growth_params_plot_single")
 )
 
 multi_statistics_tab <- shiny::fluidPage(
@@ -135,8 +146,6 @@ multi_exp_tab <- shiny::fluidPage(
                 status = "info",
                 choices = c("A", "B")#NULL
             ),
-
-
 
             shiny::actionButton(inputId = "show_graph_multiple",
                                 label = "Show graph",

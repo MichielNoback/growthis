@@ -70,7 +70,7 @@ In the Console panel, type these commands.
 
 Alternatively, you can start the app in one command: `growthis::shiny_app()` and press Enter.
 
-You can quit the app by pressing the Escape key in the Console. The browser tab should be closed as well. It is not active anymore.
+You can quit the app by pressing the Escape key in the Console. The browser tab should be closed as well. It is not active anymore. Only closing the browser tab will not shut down the app.
 
 
 ### Updating the `growthis` package
@@ -90,9 +90,10 @@ If you are prepared to use R, several functions are at your disposal. Type `libr
 The main functions are:
 
 - `read_experiment_data()` to load from Excel files (this requires some metadata to be present).
-- `filter_data()` to filer imported datasets.
+- `filter_data()` to filter imported datasets.
 - `plot_growthcurves()` to make plots.
 - `do_growth_analysis()` will give growth statistics. This requires the input of data in "wide" format; the function `create_wide_data()` does exactly that.
 
 
 In the console, type `?<function name>` to get details on their usage.
+

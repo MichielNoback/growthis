@@ -1,3 +1,49 @@
+do.scale <- T
+var <- "Sepal.Length"
+irs <- dplyr::as_tibble(iris)
+irs %>% dplyr::mutate({{var}} := if(do.scale) scale(.data[[var]]) else .data[[var]])
+
+
+
+# Library
+library(ggplot2)
+library(plotly)
+
+# Dummy data
+x <- LETTERS[1:20]
+y <- paste0("var", seq(1,20))
+data <- expand.grid(X=x, Y=y)
+data$Z <- runif(400, 0, 5)
+
+# new column: text for tooltip:
+data <- data %>%
+    mutate(text = paste0("x: ", x, "\n", "y: ", y, "\n", "Value: ",round(Z,2), "\n", "What else?"))
+
+# classic ggplot, with text in aes
+p <- ggplot(data, aes(X, Y, fill= Z, text=text)) +
+    geom_tile() +
+    scale_fill_gradient2(low = scales::muted("blue"),
+                         mid = "white",
+                         high = scales::muted("red"))
+
+ggplotly(p, tooltip="text")
+
+
+
+variable <- "r"
+ggplot2::ggplot(data = selection,
+                mapping = aes_string(x = "series_repl",
+                                     y = "dilution",
+                                     fill = variable,
+                                     text = "text")) +
+    geom_tile() +
+    scale_fill_gradient(low = scales::muted("blue"),
+                        #mid = "white",
+                        high = scales::muted("red"))
+
+
+
+
 data_wide <- coli %>%
         dplyr::filter(replicate %in% c("1C", "2C", "3C", "Avg")) %>%
         tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
@@ -144,14 +190,14 @@ data <- load_selected_experiment("2-3-2020")
 nrow(data)
 exclude <- selected_wells[[1]]
 
-exclude$replicates <- c(exclude$replicate, paste0(exclude$replicate, "C"))
-data <- data %>%
-    dplyr::filter(
-        !(start_date == exclude$start_date))# &
-              series == exclude$series &
-              dilution == exclude$dilution &
-              replicate %in% exclude$replicates))
-nrow(data)
+# exclude$replicates <- c(exclude$replicate, paste0(exclude$replicate, "C"))
+# data <- data %>%
+#     dplyr::filter(
+#         !(start_date == exclude$start_date)# &
+#               series == exclude$series &
+#               dilution == exclude$dilution &
+#               replicate %in% exclude$replicates
+# nrow(data)
 
 # data are excluded so averages should be recalculated
 tmp <- data %>%

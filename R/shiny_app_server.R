@@ -32,6 +32,11 @@ shiny_app_server <- function(input, output, session) {
     shiny::observe({
         message("updating experiment dates")
         all_experiment_dates <- available_experiment_dates(growthis::experiment_data)
+
+        message("scanning remote data store")
+        new_experiment_dates <- check_remote_for_new_datasets(all_experiment_dates)
+        message_helper("New experiments found; adding these to package data")
+
         shinyWidgets::updatePickerInput(session,
                                  inputId = "experiment_date_single",
                                  choices = all_experiment_dates)
@@ -222,20 +227,33 @@ shiny_app_server <- function(input, output, session) {
 
     ## only take action when the button is clicked
     shiny::observeEvent(input$show_statistics_single, {
-        shiny::req(input$show_statistics_single)
+        ## ignore when no selected experiment present
+        if (nrow(user_data$selected_experiment) > 1) {
+            message_helper("displaying statistics of", input$experiment_date_single)
+            user_data$growth_params_single <- do_growth_analysis(user_data$selected_experiment)
+            growth_params_single <- user_data$growth_params_single
+            output$growth_params_single <- DT::renderDataTable({
+                DT::datatable(user_data$growth_params_single,
+                              options = list(dom = 'tp', pageLength = 20)) %>%
+                    DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
+                    DT::formatSignif(columns = c(8,9,11,14), digits = 2)
+            })
 
-        message_helper("displaying statistics of", input$experiment_date_single)
-
-        user_data$growth_params_single <- do_growth_analysis(user_data$selected_experiment)
-
-        output$growth_params_single <- DT::renderDataTable({
-            DT::datatable(user_data$growth_params_single,
-                          options = list(dom = 'tp', pageLength = 20)) %>%
-                DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
-                DT::formatSignif(columns = c(8,9,11,14), digits = 2)
-        })
+            shiny::updateSelectInput(inputId = "growth_params_plot_variable_single",
+                                     choices = names(growth_params_single)[5:14])
+        }
     })
 
+    ## generate heatmap of a selected variable from single-experiment growth params
+    shiny::observeEvent(input$growth_params_plot_variable_single, {
+        req(input$growth_params_plot_variable_single)
+        message_helper("displaying growth param heatmap for", input$growth_params_plot_variable_single)
+        output$growth_params_plot_single <- plotly::renderPlotly(
+            plot_growth_statistics(growth_params_tibble = user_data$growth_params_single,
+                                   variable = input$growth_params_plot_variable_single,
+                                   do_scale = if (input$growth_params_plot_scaled_single == "yes") TRUE else FALSE)
+        )
+    })
 
     ## Downloadable csv of statistics of selected dataset
     output$growth_statistics_single_download <- shiny::downloadHandler(

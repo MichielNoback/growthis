@@ -1,3 +1,39 @@
+#' Reads remote data store and compares to the data collection already present
+#'
+#' Assumes that the directory has a .htaccss file with this content:
+#' DirectoryIndex index
+#' IndexOptions Type=text/plain SuppressSize
+#'
+#'
+check_remote_for_new_datasets <- function(all_experiment_dates) {
+    message_helper("checking for new datasets. Already present:", all_experiment_dates)
+    remote_data_url <- "https://bioinf.nl/~michiel/growthis_data/"
+    ## download listing
+    filenames <- RCurl::getURL(remote_data_url, verbose=TRUE, ftp.use.epsv=TRUE, dirlistonly = TRUE)
+    ## remove all html tags
+    tmp <- gsub("<.*?>","",filenames)
+    ## proces into character vector of filenames
+    tmp <- unlist(strsplit(tmp, "\n+"))
+    tmp <- trimws(tmp[grepl(".xlsx?", tmp)])
+
+    ## read and compare with already registered
+    for (i in seq_along(tmp)) {
+        filename <- paste0(remote_data_url, tmp[i])
+
+        print(filename)
+        tempfile <- tempfile(fileext = ".xlsx")
+        download.file(url = filename, destfile = tempfile, mode = "wb", quiet = TRUE)
+        # httr::GET(url = filename, httr::write_disk(tempfile))
+        #df <- read_excel(tf, 2L)
+
+        start_date <- extract_start_date(xlsx_file = tempfile, metadata_sheet = "General_Info")
+        print(start_date)
+        break
+    }
+
+}
+
+
 #' Loads a single experiment from Rda file (from package package data)
 #'
 load_selected_experiment <- function(experiment_date_single) {
