@@ -24,9 +24,15 @@ check_remote_for_new_datasets <- function(all_experiment_dates) {
         tempfile <- tempfile(fileext = ".xlsx")
         download.file(url = filename, destfile = tempfile, mode = "wb", quiet = TRUE)
         # httr::GET(url = filename, httr::write_disk(tempfile))
-        #df <- read_excel(tf, 2L)
 
         start_date <- extract_start_date(xlsx_file = tempfile, metadata_sheet = "General_Info")
+
+        if (! start_date %in% all_experiment_dates) {
+            varioscan_data <- read_varioscan()
+
+        }
+
+
         print(start_date)
         break
     }

@@ -12,9 +12,18 @@
 #' @export
 #'
 plot_growth_statistics <- function(growth_params_tibble, variable_name, do_scale = FALSE) {
-    # print(growth_params_tibble)
-    # print("--->>>")
-    # print(variable_name)
+    if(! variable_name %in%names(growth_params_tibble)) {
+        stop(paste0("no such variable in the given tibble: ", variable_name));
+    }
+
+    ## when this print is removed, I get the error
+    ## Warning: Error in local_error_context: promise already under evaluation: recursive default argument reference or earlier problems?
+    ## 123: local_error_context
+    ## 122: <Anonymous>
+    ##
+    #print(variable_name)
+    ##
+    ## For that reason I included the above if() clause which will never rstop in the context of this app
 
     selection <- growth_params_tibble %>%
         mutate(series_repl = paste0(series, "_", replicate),

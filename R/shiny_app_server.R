@@ -35,7 +35,7 @@ shiny_app_server <- function(input, output, session) {
 
         message("scanning remote data store")
         new_experiment_dates <- check_remote_for_new_datasets(all_experiment_dates)
-        message_helper("New experiments found; adding these to package data")
+        message("New experiments found; adding these to package data")
 
         shinyWidgets::updatePickerInput(session,
                                  inputId = "experiment_date_single",
@@ -248,11 +248,11 @@ shiny_app_server <- function(input, output, session) {
     shiny::observeEvent(input$growth_params_plot_variable_single, {
         req(input$growth_params_plot_variable_single)
         message_helper("displaying growth param heatmap for", input$growth_params_plot_variable_single)
-        output$growth_params_plot_single <- plotly::renderPlotly(
+        isolate(output$growth_params_plot_single <- plotly::renderPlotly(
             plot_growth_statistics(growth_params_tibble = user_data$growth_params_single,
                                    variable = input$growth_params_plot_variable_single,
                                    do_scale = if (input$growth_params_plot_scaled_single == "yes") TRUE else FALSE)
-        )
+        ))
     })
 
     ## Downloadable csv of statistics of selected dataset
