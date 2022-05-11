@@ -1,0 +1,5 @@
+FROM rocker/shiny-verse
+WORKDIR /srv/growthis-shiny
+RUN apt-get update && apt-get -y --no-install-recommends install libglpk40
+RUN install2.r --error --deps TRUE shinyWidgets here visNetwork plotly
+COPY shiny-server.conf /etc/shiny-server/shiny-server.conf

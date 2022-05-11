@@ -1,0 +1,11 @@
+version: "3.1"
+services:
+  growthis:
+    user: 'shiny'
+    build: /srv/growthis-shiny
+    container_name: growthis-viewer
+    volumes:
+      - ./GROWTHIS-viewer/:/srv/shiny-server/
+      - ./logs:/var/log/shiny-server/
+    ports:
+      - "3838:3838"
