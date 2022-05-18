@@ -8,6 +8,7 @@ do_growth_analysis <- function(varioscan) {
     wide_format <- create_wide_data(varioscan)
 
     growth_params <- determine_growth_params(wide_format)
+
     return(growth_params)
 }
 
@@ -15,6 +16,7 @@ do_growth_analysis <- function(varioscan) {
 #'
 determine_growth_params <- function(wide_format_data) {
     time_vec <- wide_format_data$time
+
     fit_fun <- function(x) {
         fit_data <- growthcurver::SummarizeGrowth(time_vec, x)
         extracted_data <- c(
@@ -31,10 +33,19 @@ determine_growth_params <- function(wide_format_data) {
             "df" = fit_data$vals$df
         )
         return(extracted_data)
-
     }
+
+
     fitted_models <- sapply(wide_format_data[, -1], fit_fun)
+
+    yield <- determine_yield(wide_format_data)
+    fitted_models <- rbind(fitted_models, yield)
+
+    #print(fitted_models)
+
     fitted_models <- t(fitted_models)
+
+
     row_names <- rownames(fitted_models)
     #print(row_names)
     fitted_models <- dplyr::as_tibble(fitted_models) %>%
@@ -45,6 +56,13 @@ determine_growth_params <- function(wide_format_data) {
                         sep = "_")
 
     return(fitted_models)
+}
+
+determine_yield <- function(wide_format) {
+    yields <- apply(X = wide_format[, -1],
+                    MARGIN = 2,
+                    FUN = function(x){c("yield" = max(x) - x[1])})
+    yields
 }
 
 

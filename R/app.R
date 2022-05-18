@@ -1,14 +1,15 @@
 #' starts the shiny app
 #' @export
 #'
-shiny_app <- function() {
-    #load(paste0(here::here(), "/data/varioscan_data.rda"))
-    #shiny::shinyApp(ui = shiny_app_ui, server = shiny_app_server)
-    shiny::runApp(list(ui = shiny_app_ui, server = shiny_app_server), launch.browser = TRUE)
+shiny_app <- function(launch_browser = FALSE, port = 3838) {
+    shiny::runApp(list(ui = shiny_app_ui,
+                       server = shiny_app_server),
+                  launch.browser = launch_browser,
+                  port = port)
 }
 
-#foo() # in filter_data.R - runs
-#bar() # in shiny_helpers.R -  gives error
+#shiny::shinyApp(ui = shiny_app_ui, server = shiny_app_server)
+
 
 #not exported server function
 shiny_app_server <- function(input, output, session) {
@@ -33,9 +34,9 @@ shiny_app_server <- function(input, output, session) {
         message("updating experiment dates")
         all_experiment_dates <- available_experiment_dates(growthis::experiment_data)
 
-        message("scanning remote data store")
-        new_experiment_dates <- check_remote_for_new_datasets(all_experiment_dates)
-        message("New experiments found; adding these to package data")
+        #message("scanning remote data store")
+        #new_experiment_dates <- check_remote_for_new_datasets(all_experiment_dates)
+        #message("New experiments found; adding these to package data")
 
         shinyWidgets::updatePickerInput(session,
                                  inputId = "experiment_date_single",
@@ -241,6 +242,11 @@ shiny_app_server <- function(input, output, session) {
 
             shiny::updateSelectInput(inputId = "growth_params_plot_variable_single",
                                      choices = names(growth_params_single)[5:14])
+
+            output$yield_over_concentration_plot_single <- shiny::renderPlot({
+                plot_yield_over_concentration(user_data$growth_params_single,
+                                              exp = input$yield_over_concentration_plot_exp_selection_single)
+            })
         }
     })
 

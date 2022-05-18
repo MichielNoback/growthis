@@ -16,7 +16,7 @@ plot_growth_statistics <- function(growth_params_tibble, variable_name, do_scale
         stop(paste0("no such variable in the given tibble: ", variable_name));
     }
 
-    ## when this print is removed, I get the error
+    ## when this print is removed, I get the following error
     ## Warning: Error in local_error_context: promise already under evaluation: recursive default argument reference or earlier problems?
     ## 123: local_error_context
     ## 122: <Anonymous>
@@ -54,3 +54,50 @@ plot_growth_statistics <- function(growth_params_tibble, variable_name, do_scale
 # save the widget
 # library(htmlwidgets)
 # saveWidget(pp, file=paste0( getwd(), "/HtmlWidget/ggplotlyHeatmap.html"))
+
+
+#' Scatter plot of yield over concentration
+#'
+#' Creates a scatter plot of yield over concentration (dilution) for all replicates.
+#'
+#' @param growth_params_tibble a tibble containing results of growth statistics analysis.
+#'
+#' @import ggplot2
+#' @import dplyr
+#'
+#' @export
+#'
+plot_yield_over_concentration <- function(growth_params_tibble, exp = "all") {
+    #Plot van yield (y) over Concentration (X), met daarin (optioneel) de IC50/IC90.
+
+    growth_params_tibble <- growth_params_tibble %>%
+        mutate(dilution = as.numeric(dilution),
+               yield2 = K - N0)
+    if(exp != "all") {
+        growth_params_tibble <- growth_params_tibble %>%
+            filter(series %in% exp)
+    }
+
+    growth_params_tibble <- remove_extreme_yield_outliers(growth_params_tibble)
+
+    print(growth_params_tibble)
+
+    p <- ggplot(data = growth_params_tibble,
+                mapping = aes(x = dilution, y = yield, color = series)) +
+        geom_smooth(method = "loess", se = F) + #, span = 0.5
+        geom_point(alpha = 0.5) +
+        theme_minimal()
+    #print(p)
+    return(p)
+}
+
+
+#' removes extreme outliers with respect to yield
+#' because of plot corruption
+remove_extreme_yield_outliers <- function(growth_params_tibble, z_score_cutoff = 3) {
+    growth_params_tibble %>%
+        mutate(z_score = abs(yield2 - mean(yield2)) / sd(yield2)) %>%
+        filter(z_score < z_score_cutoff)
+
+#    as.data.frame(sapply(data, function(data) (abs(data-mean(data))/sd(data))))
+}

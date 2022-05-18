@@ -22,6 +22,17 @@ single_statistics_tab <- shiny::fluidPage(
     plotly::plotlyOutput("growth_params_plot_single")
 )
 
+
+single_statistics_analysis_tab <- shiny::fluidPage(
+    shiny::h4("Visualize"),
+    shiny::selectInput(inputId = "yield_over_concentration_plot_exp_selection_single",
+                       label = "You can select a single dataseries",
+                       choices = c("all", "Exp1", "Exp2", "Exp3"),
+                       selected = "all"),
+    shiny::plotOutput("yield_over_concentration_plot_single")
+)
+
+
 multi_statistics_tab <- shiny::fluidPage(
     shiny::actionButton(inputId = "show_statistics_multiple",
                         label = "Calculate statistics",
@@ -104,6 +115,7 @@ single_exp_tab <- shiny::fluidPage(
             shiny::tabsetPanel(type = "tabs",
                                shiny::tabPanel("Growth curves", single_growthcurve_box),
                                shiny::tabPanel("Growth statistics", single_statistics_tab),
+                               shiny::tabPanel("Growth statistics analysis", single_statistics_analysis_tab),
             )
         )
     )

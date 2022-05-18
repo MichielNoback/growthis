@@ -5,6 +5,9 @@
 .Rhistory
 .Rapp.history
 
+# test data
+test_data/
+
 # Session Data files
 .RData
 .RDataTmp
