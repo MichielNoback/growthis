@@ -180,7 +180,8 @@ multi_exp_tab <- shiny::fluidPage(
 )
 
 
-## The main UI function
+#' The main UI function
+#' @export
 shiny_app_ui <- function() {
     ui <- shiny::mainPanel(
         shiny::titlePanel("Varioscan growth analysis"),

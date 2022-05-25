@@ -44,7 +44,8 @@ check_remote_for_new_datasets <- function(all_experiment_dates) {
 #'
 load_selected_experiment <- function(experiment_date_single) {
     #message_helper("loading", experiment_date_single)
-    return(get(experiment_date_single))
+    return(eval(parse(text = paste0("growthis::`", experiment_date_single, "`"))))
+    #return(get(experiment_date_single))
 }
 
 
