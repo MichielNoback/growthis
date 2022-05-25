@@ -157,6 +157,25 @@ shiny_app_server <- function(input, output, session) {
             plate_layout <- get_plate_layout(user_data$selected_experiment)
             clickable_plate_layout <- get_clickable_plate_layout(ui_glyphs, plate_layout)
             plate_layout_reactive$wells <- clickable_plate_layout
+
+            ## Button with explicit action was removed
+            message_helper("displaying statistics of", input$experiment_date_single)
+            user_data$growth_params_single <- do_growth_analysis(user_data$selected_experiment)
+            growth_params_single <- user_data$growth_params_single
+            output$growth_params_single <- DT::renderDataTable({
+                DT::datatable(user_data$growth_params_single,
+                              options = list(dom = 'tp', pageLength = 20)) %>%
+                    DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
+                    DT::formatSignif(columns = c(8,9,11,14,16), digits = 2)
+            })
+
+            shiny::updateSelectInput(inputId = "growth_params_plot_variable_single",
+                                     choices = names(growth_params_single)[5:14])
+
+            output$yield_over_concentration_plot_single <- shiny::renderPlot({ # plotly::renderPlotly({
+                plot_yield_over_concentration(user_data$growth_params_single,
+                                              exp = input$yield_over_concentration_plot_exp_selection_single)
+            })
         }
     })
 
@@ -225,30 +244,6 @@ shiny_app_server <- function(input, output, session) {
             write.csv(selected_experiment, file, row.names = FALSE)
         }
     )
-
-    ## only take action when the button is clicked
-    shiny::observeEvent(input$show_statistics_single, {
-        ## ignore when no selected experiment present
-        if (nrow(user_data$selected_experiment) > 1) {
-            message_helper("displaying statistics of", input$experiment_date_single)
-            user_data$growth_params_single <- do_growth_analysis(user_data$selected_experiment)
-            growth_params_single <- user_data$growth_params_single
-            output$growth_params_single <- DT::renderDataTable({
-                DT::datatable(user_data$growth_params_single,
-                              options = list(dom = 'tp', pageLength = 20)) %>%
-                    DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
-                    DT::formatSignif(columns = c(8,9,11,14), digits = 2)
-            })
-
-            shiny::updateSelectInput(inputId = "growth_params_plot_variable_single",
-                                     choices = names(growth_params_single)[5:14])
-
-            output$yield_over_concentration_plot_single <- shiny::renderPlot({
-                plot_yield_over_concentration(user_data$growth_params_single,
-                                              exp = input$yield_over_concentration_plot_exp_selection_single)
-            })
-        }
-    })
 
     ## generate heatmap of a selected variable from single-experiment growth params
     shiny::observeEvent(input$growth_params_plot_variable_single, {

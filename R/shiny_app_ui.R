@@ -2,10 +2,11 @@
 #not exported ui variables and functions
 
 single_statistics_tab <- shiny::fluidPage(
-    shiny::actionButton(inputId = "show_statistics_single",
-                        label = "Calculate statistics",
-                        icon = shiny::icon("chart-area"),
-                        width = 150),
+    # shiny::actionButton(inputId = "show_statistics_single",
+    #                     label = "Calculate statistics",
+    #                     icon = shiny::icon("chart-area"),
+    #                     width = 150),
+    br(),
     shiny::downloadButton(outputId = "growth_statistics_single_download",
                                       label = "Download as csv"),
     DT::dataTableOutput(outputId = "growth_params_single"),
@@ -29,7 +30,8 @@ single_statistics_analysis_tab <- shiny::fluidPage(
                        label = "You can select a single dataseries",
                        choices = c("all", "Exp1", "Exp2", "Exp3"),
                        selected = "all"),
-    shiny::plotOutput("yield_over_concentration_plot_single")
+    shiny::plotOutput("yield_over_concentration_plot_single", width = "900px", height="600px")
+#    plotly::plotlyOutput("yield_over_concentration_plot_single", width = "1000px", height="700px")
 )
 
 
@@ -60,14 +62,14 @@ well_selection_box <- shinydashboard::box(
 
 
 single_growthcurve_box <- shinydashboard::box(
-    style='padding:20px;width:1000px;overflow-x: scroll;', #height:800px;overflow-y: scroll;
+    style='padding:20px;width:1100px;overflow-x: scroll;', #height:800px;overflow-y: scroll;
     shiny::radioButtons(inputId = "graph_type_single",
                       label =  "Graph type",
                       choices = c("ribbon", "average", "replicates"),
                       selected = "ribbon",
                       inline = TRUE),
     shiny::plotOutput(outputId = "growthcurve_plot_single",
-                    width = "1000px", height="500px"),
+                    width = "1100px", height="700px"),
 #    shinyjs::hidden(div(id = "well_selection_box_wrapper",
                         tags$style(HTML('.plate_layout th, .plate_layout td {padding: 4px !important; background-color: floralwhite !important;}')),
                         well_selection_box,
@@ -76,14 +78,15 @@ single_growthcurve_box <- shinydashboard::box(
 )
 
 multi_growthcurve_box <- shinydashboard::box(
-    style='padding:20px;width:1000px;overflow-x: scroll;overflow-y: scroll;',#height:800px;
+    style='padding:20px;width:1000px;overflow-x: scroll;height:750px;overflow-y:scroll;',
     shiny::radioButtons(inputId = "graph_type_multiple",
                         label =  "Graph type",
                         choices = c("ribbon", "average", "replicates"),
                         selected = "ribbon",
                         inline = TRUE),
     shiny::plotOutput(outputId = "growthcurve_plot_multiple",
-                      width = "1000px", height="700px"),
+                      width = "1000px", height="1200px"),
+    br()
 )
 
 

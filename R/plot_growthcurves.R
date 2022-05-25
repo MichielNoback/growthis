@@ -61,7 +61,7 @@ create_controls_plot <- function(data) {
     ggplot2::xlab("Duration (h)") +
     ggplot2::labs(color = "dilution") +
     ggplot2::scale_color_manual(values = get_series_palette()) +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_minimal(base_size = 16) +
     ggplot2::theme(legend.title = ggplot2::element_blank())
                    #legend.key = ggplot2::element_rect()
                    #legend.spacing.y = ggplot2::unit(0.2, "cm"))
@@ -101,7 +101,7 @@ create_ribbon_plot <- function(data) {
         ggplot2::labs(fill = "dilution", color = "dilution") +
         #ggplot2::xlab("Duration (h)") +
         ggplot2::ylab("OD") +
-        ggplot2::theme_minimal() +
+        ggplot2::theme_minimal(base_size = 16) +
         ggplot2::theme(
             axis.title.x = ggplot2::element_blank(),
             axis.text.x = ggplot2::element_blank(),
@@ -122,7 +122,7 @@ plot_all <- function(data, plt_type) {
         ggplot2::scale_x_time() +
         #ggplot2::xlab("Duration (h)") +
         ggplot2::labs(color = "dilution") +
-        ggplot2::theme_minimal() +
+        ggplot2::theme_minimal(base_size = 16) +
         ggplot2::theme(
             axis.title.x = ggplot2::element_blank(),
             axis.text.x = ggplot2::element_blank()) +

@@ -67,9 +67,9 @@ plot_growth_statistics <- function(growth_params_tibble, variable_name, do_scale
 #'
 #' @export
 #'
-plot_yield_over_concentration <- function(growth_params_tibble, exp = "all") {
+plot_yield_over_concentration <- function(growth_params_tibble,
+                                          exp = "all") {
     #Plot van yield (y) over Concentration (X), met daarin (optioneel) de IC50/IC90.
-
     growth_params_tibble <- growth_params_tibble %>%
         mutate(dilution = as.numeric(dilution),
                yield2 = K - N0)
@@ -78,16 +78,52 @@ plot_yield_over_concentration <- function(growth_params_tibble, exp = "all") {
             filter(series %in% exp)
     }
 
-    growth_params_tibble <- remove_extreme_yield_outliers(growth_params_tibble)
+    #growth_params_tibble <- remove_extreme_yield_outliers(growth_params_tibble)
 
-    print(growth_params_tibble)
+    all_model_data <- model_dose_response(growth_params_tibble)
+
+    fitted_data <- all_model_data$fitted_data
+
+    max_y <- max(growth_params_tibble$yield)
+    relative_y_positions <- c(1, 0.92, 0.84, 0.76, 0.68, 0.6)[1 : (2 * length(unique(growth_params_tibble$series)))]
+    #print(relative_y_positions)
+    IC50_IC90_data <- all_model_data$IC50_IC90 %>%
+        tidyr::pivot_longer(cols = 2:3,
+                            names_to = "criterion",
+                            values_to = "dilution") %>%
+        dplyr::arrange(dilution) %>%
+        dplyr::mutate(label = paste0(criterion, "=", dilution),
+                      y_pos = relative_y_positions * max_y)
+    #print(IC50_IC90_data)
+    #print(model_data)
 
     p <- ggplot(data = growth_params_tibble,
                 mapping = aes(x = dilution, y = yield, color = series)) +
-        geom_smooth(method = "loess", se = F) + #, span = 0.5
-        geom_point(alpha = 0.5) +
-        theme_minimal()
-    #print(p)
+        # {if(model == "nls") geom_smooth(method = "nls", se = FALSE,
+        #             formula = y ~ a * exp(r * x),
+        #             method.args = list(start = c(a = 10, r = -0.01)),
+        #             size = 0.5)} +
+        # {if(model == "glm") geom_smooth(method = "glm",
+        #             method.args = list(family = "binomial"),
+        #             se = FALSE,
+        #             size = 0.5)} +
+        geom_vline(mapping = aes(xintercept = dilution, color = series),
+                   linetype = "dotted",
+                   data = IC50_IC90_data,
+                   size = 1) +
+        geom_label(data = IC50_IC90_data,
+                   mapping = aes(x = dilution,
+                                 y = y_pos,
+                                 color = series,
+                                 label = label),
+
+                   hjust = "left",
+                   size = 6) +
+        geom_line(data = fitted_data,
+                  mapping = aes(x = dilution, y = predicted, color = series), size = 1) +
+        geom_point(mapping = aes(shape = replicate), alpha = 0.7, size = 3) +
+        theme_minimal(base_size = 18)
+
     return(p)
 }
 

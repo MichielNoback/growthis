@@ -1,0 +1,14 @@
+R^2 = 1 - var(model_resid) / var(y)
+
+==> Welk % van de variantie wordt "verklaard" door het model
+
+zie ook adjusted R^2
+
+
+AIC -- kosten/baten analyse : parameters vs goodness of fit
+hoe lager AIC hoe beter het model
+
+
+OD ~ OD0 + (yield_H0 * exp(-rate_of_decay * dilution^power)) /
+    1 + exp(-growth_rate * (time - OD_midpoint))
+
