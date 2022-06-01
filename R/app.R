@@ -172,10 +172,24 @@ shiny_app_server <- function(input, output, session) {
             shiny::updateSelectInput(inputId = "growth_params_plot_variable_single",
                                      choices = names(growth_params_single)[5:14])
 
+            growth_params_tibble <- mutate(user_data$growth_params_single, dilution = as.numeric(dilution))
+            if(input$model_plot_exp_selection_single != "all") {
+                growth_params_tibble <- growth_params_tibble %>%
+                    filter(series == input$model_plot_exp_selection_single)
+            }
+
+            all_model_data <<- model_dose_response(growth_params = growth_params_tibble,
+                                                  dependent_var = input$model_plot_dependent_var_selection_single,
+                                                  nls_trace = FALSE)
+
             output$yield_over_concentration_plot_single <- shiny::renderPlot({ # plotly::renderPlotly({
-                plot_yield_over_concentration(user_data$growth_params_single,
-                                              exp = input$yield_over_concentration_plot_exp_selection_single)
+                plot_dependent_var_over_concentration(growth_params_tibble,
+                                                      all_model_data = all_model_data,
+                                                      dependent_var = input$model_plot_dependent_var_selection_single,
+                                                      exp = input$model_plot_exp_selection_single)
             })
+
+            output$model_info_single <- shiny::renderPrint(all_model_data$models)
         }
     })
 

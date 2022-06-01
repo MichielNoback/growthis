@@ -2,6 +2,34 @@
 #'
 #' @param varioscan the varioscan data in long format
 #'
+#' @details
+#' Most data comes from the growthcurver package. Only `yield` is added here.
+#'
+#' The population size at the beginning of the growth curve is given by `N0`.
+#' The maximum possible population size in a particular environment, or the
+#' carrying capacity, is given by `K`. The intrinsic growth rate of the population,
+#' `r`, is the growth rate that would occur if there were no restrictions imposed on
+#' total population size.
+#'
+#' The most useful values are `k`, `n0`, and `r`, which are the values of the parameters for the logistic
+#' equation that best fit the data. The fitting algorithm provides a measure of uncertainty for each,
+#' which is available (for n) in the n_p and n_se values, for example. The values `sigma` and `df` are
+#' both determined during the nonlinear regression fit. Df is the degrees of freedom and sigma is a
+#' measure of the goodnesss of fit of the parameters of the logistic equation for the data; it is
+#' the residual standard error from the nonlinear regression model. Smaller sigma values indicate
+#' a better fit of the logistic curve to the data than larger values.
+#'
+#' `t_mid` is the time at which the population density reaches 12K (which occurs at the inflection point),
+#' `t_gen` is the fastest possible generation time (also called the doubling time), `auc_l` is the area
+#' under the logistic curve obtained by taking the integral of the logistic equation, and `auc_e` is
+#' the empirical area under the curve which is obtained by summing up the area under the experimental
+#' curve from the measurements in the input data. If you decide to use auc_l or auc_e, make sure that
+#' you specify the parameter t_trim so that these metrics are comparable across samples or plates that
+#'  were grown for different lengths of time.
+#'
+#'  The note value provides additional information about problems with fitting the logistic curve to
+#'  your data. No common problems were identified if it is empty.
+#'
 #' @export
 #'
 do_growth_analysis <- function(varioscan) {
@@ -11,9 +39,21 @@ do_growth_analysis <- function(varioscan) {
 }
 
 #' Models the yield as a function of dilution
-#' returns a dataframe with fitted
-model_dose_response <- function(growth_params, nls_trace = FALSE) {
-    # yield_model <- model_dose_response(growth_params_tibble, exp, model)
+#'
+#' @param growth_params the tibble with growth parameters (a result of `do_growth_analysis()`)
+#' @param dependent the dependent variable, either one of `yield` and `auc_l`
+#' @param nls_trace when TRUE gives the tarce of the nls function
+#'
+#' @export
+#'
+model_dose_response <- function(growth_params,
+                                dependent_var,
+                                nls_trace = FALSE) {
+    if(! dependent_var %in% c("AUC_l", "AUC_e", "K", "yield")) {
+        stop(paste0("this dependent variable can not be modeled: "), dependent_var)
+    }
+
+
     dilution_seq <- seq(from = 0,
                         to = max(growth_params$dilution),
                         length.out = 100)
@@ -23,6 +63,7 @@ model_dose_response <- function(growth_params, nls_trace = FALSE) {
     all_models <- list()
     all_IC50_IC90 <- list()
 
+    message(paste0("modeling on ", dependent_var))
     for(current_series in unique(growth_params$series)) {
         message(paste0("analysing: ", current_series))
 
@@ -32,19 +73,35 @@ model_dose_response <- function(growth_params, nls_trace = FALSE) {
         #print(series_data)
 
         ## Build model
-        default_power = 3
-        yield_model <- build_model(current_series, series_data, dilution_seq, default_power, nls_trace)
-        all_models[[current_series]] <- yield_model
+        if(dependent_var == "yield") {
+            default_power <- 3
+            the_model <- build_model(series = current_series,
+                                           series_data = series_data,
+                                           dilution_seq = dilution_seq,
+                                           dependent_var = dependent_var,
+                                           default_power = default_power,
+                                           nls_trace = nls_trace)
+        } else {
+            default_power <- 2
+            the_model <- build_model(series = current_series,
+                                           series_data = series_data,
+                                           dilution_seq = dilution_seq,
+                                           dependent_var = dependent_var,
+                                           default_power = default_power,
+                                           nls_trace = nls_trace)
+        }
+
+        all_models[[current_series]] <- the_model
 
         ## Predict
         model_data <- data.frame(dilution = dilution_seq)
         model_data$series <- current_series
-        model_data$predicted <- predict(yield_model, newdata = model_data)
+        model_data$predicted <- predict(the_model, newdata = model_data)
         fitted_data[[current_series]] <- model_data
 
         ## Get metadata
-        #yield_H0 = max(series_data$yield)
-        all_IC50_IC90[[current_series]] <- calculate_series_meta_data(current_series, yield_model, default_power)
+        #init_H0 = max(series_data$yield)
+        all_IC50_IC90[[current_series]] <- calculate_series_meta_data(current_series, the_model, default_power)
 
         # all_IC50_IC90[[current_series]] <- series_meta_data
     }
@@ -59,72 +116,72 @@ model_dose_response <- function(growth_params, nls_trace = FALSE) {
 }
 
 #' Builds the model using nls
-build_model <- function(current_series, series_data, dilution_seq, default_power, nls_trace = FALSE) {
-    yield_H0 = max(series_data$yield)
-
+build_model <- function(series,
+                        series_data,
+                        dilution_seq,
+                        dependent_var = "yield",
+                        default_power = 3,
+                        nls_trace = FALSE) {
+    init_H0 = max(series_data[, dependent_var])
+    #print(dependent_var)
+    first_formula <- paste0(dependent_var, " ~ H0 * exp(-r * dilution^", default_power, ")")
+    #print(first_formula)
     ## generate first model to get values for H0 and r
-    yield_model1 <- nls(yield ~ H0 * exp(-r * dilution^default_power), #yield ~ H0 * exp(-r * dilution),
+    first_model <- nls(formula = first_formula, #
                         data = series_data,
-                        start = list(H0 = yield_H0,
+                        start = list(H0 = init_H0,
                                      r = 1E4),
                         trace = nls_trace,
                         control = list(maxiter = 100))
 
+    #print(first_model)
     yield_model <- tryCatch(expr = {
-        message("trying second nls model")
+        message("trying secondary nls model")
         ## generate second model to get values for all three parameters
-        yield_model2 <- nls(yield ~ H0 * exp(-r * dilution^power), #yield ~ H0 * exp(-r * dilution),
+        second_formula <- paste0(dependent_var, " ~ H0 * exp(-r * dilution^power)")
+        #print(second_formula)
+        second_model <- nls(second_formula, #
                             data = series_data,
-                            start = list(H0 = coef(yield_model1)["H0"],
-                                         r = coef(yield_model1)["r"],
+                            start = list(H0 = coef(first_model)["H0"],
+                                         r = coef(first_model)["r"],
                                          power = default_power),
                             trace = nls_trace,
                             control = list(maxiter = 300,
                                            minFactor = 1E-4))
         ##succeeded second model, return this
-        yield_model2
+        second_model
     }, error=function(cond) {
         message("model failed; returning simpler one")
-        yield_model1
+        first_model
     })
-    yield_model <<- yield_model
+    #yield_model <<- yield_model
     return(yield_model)
 }
 
 
 
 #' Calculates IC50 and IC90
-calculate_series_meta_data <- function(current_series, yield_model, default_power){
+calculate_series_meta_data <- function(current_series, the_model, default_power){
     ## calculate IC90 and IC50
-    found_r <- coef(yield_model)["r"]
-    found_H0 <- coef(yield_model)["H0"]
-    power  <- coef(yield_model)["power"]
+    found_r <- coef(the_model)["r"]
+    found_H0 <- coef(the_model)["H0"]
+    power  <- coef(the_model)["power"]
     if(is.na(power)) power <- default_power
-    yield_IC50 <- found_H0 * 0.5
-    yield_IC90 <- found_H0 * 0.1
-
-    ## MODEL 1: yield = H0 * exp(-r * dilution)
-    ## H0 <- 0.56656
-    ## found_r <- 293.1988
-    ## yield_IC50 <- 0.5 * yield_H0
-    ## yield_IC50 = yield_H0 * exp(-found_r * dilution_IC50)
-    ## yield_IC50 / yield_H0 = exp(-found_r * dilution_IC50)
-    ## log(yield_IC50 / yield_H0) = -found_r * dilution_IC50
-    ## dilution_IC50 = log(yield_IC50 / yield_H0) / -found_r
-
+    IC50 <- found_H0 * 0.5
+    IC90 <- found_H0 * 0.1
 
     ## MODEL 2: yield ~ H0 * exp(-r * dilution**2)
-    ## yield = yield_H0 * exp(-r * dilution^2)
-    ## yield / yield_H0 = exp(-r * dilution^2)
-    ## log(yield / yield_H0) = -r * dilution^2
-    ## log(yield / yield_H0) / -r = dilution^2
-    ## dilution = sqrt(log(yield / yield_H0) / -r)
+    ## yield = init_H0 * exp(-r * dilution^2)
+    ## yield / init_H0 = exp(-r * dilution^2)
+    ## log(yield / init_H0) = -r * dilution^2
+    ## log(yield / init_H0) / -r = dilution^2
+    ## dilution = sqrt(log(yield / init_H0) / -r)
 
 
     ## USING MODEL 2
     ## If the yield_C50 is negative this will produce an NaN
-    dilution_IC50 <- (log(yield_IC50 / found_H0) / -found_r)^(1/power) #log(yield_IC50 / yield_H0) / -found_r
-    dilution_IC90 <- (log(yield_IC90 / found_H0) / -found_r)^(1/power)  #log(yield_IC90 / yield_H0) / -found_r
+    dilution_IC50 <- (log(IC50 / found_H0) / -found_r)^(1/power)
+    dilution_IC90 <- (log(IC90 / found_H0) / -found_r)^(1/power)
 
     series_meta_data <- data.frame(series = current_series,
                                    IC50 = round(dilution_IC50, 4),

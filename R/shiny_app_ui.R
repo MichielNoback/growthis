@@ -26,12 +26,25 @@ single_statistics_tab <- shiny::fluidPage(
 
 single_statistics_analysis_tab <- shiny::fluidPage(
     shiny::h4("Visualize"),
-    shiny::selectInput(inputId = "yield_over_concentration_plot_exp_selection_single",
-                       label = "You can select a single dataseries",
+    shiny::div(style="display: inline-block;vertical-align:top; width: 200px;",
+               shiny::selectInput(inputId = "model_plot_dependent_var_selection_single",
+                                  label = "Variable to model on",
+                                  choices = c("AUC_l", "AUC_e", "yield"),
+                                  selected = "AUC_l")),
+
+    shiny::div(style="display: inline-block;vertical-align:top; width: 200px;",
+               shiny::selectInput(inputId = "model_plot_exp_selection_single",
+                       label = "Select dataseries",
                        choices = c("all", "Exp1", "Exp2", "Exp3"),
-                       selected = "all"),
-    shiny::plotOutput("yield_over_concentration_plot_single", width = "900px", height="600px")
+                       selected = "all")),
+    shiny::br(),
+
+    shiny::div(style="display: inline-block;vertical-align:top;width:900px;!important",
+               shiny::plotOutput("yield_over_concentration_plot_single", width = "900px", height="600px")),
 #    plotly::plotlyOutput("yield_over_concentration_plot_single", width = "1000px", height="700px")
+
+    shiny::div(style="display: inline-block;vertical-align:top; width: 500px;",
+           shiny::verbatimTextOutput(outputId = "model_info_single"))
 )
 
 
@@ -159,7 +172,7 @@ multi_exp_tab <- shiny::fluidPage(
                 label = "Strains",
                 inline = TRUE,
                 status = "info",
-                choices = c("A", "B")#NULL
+                choices = NULL
             ),
 
             shiny::actionButton(inputId = "show_graph_multiple",

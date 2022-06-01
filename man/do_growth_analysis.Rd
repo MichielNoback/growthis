@@ -12,3 +12,31 @@ do_growth_analysis(varioscan)
 \description{
 Perform growth analysis on a varioscan data set
 }
+\details{
+Most data comes from the growthcurver package. Only \code{yield} is added here.
+
+The population size at the beginning of the growth curve is given by \code{N0}.
+The maximum possible population size in a particular environment, or the
+carrying capacity, is given by \code{K}. The intrinsic growth rate of the population,
+\code{r}, is the growth rate that would occur if there were no restrictions imposed on
+total population size.
+
+The most useful values are \code{k}, \code{n0}, and \code{r}, which are the values of the parameters for the logistic
+equation that best fit the data. The fitting algorithm provides a measure of uncertainty for each,
+which is available (for n) in the n_p and n_se values, for example. The values \code{sigma} and \code{df} are
+both determined during the nonlinear regression fit. Df is the degrees of freedom and sigma is a
+measure of the goodnesss of fit of the parameters of the logistic equation for the data; it is
+the residual standard error from the nonlinear regression model. Smaller sigma values indicate
+a better fit of the logistic curve to the data than larger values.
+
+\code{t_mid} is the time at which the population density reaches 12K (which occurs at the inflection point),
+\code{t_gen} is the fastest possible generation time (also called the doubling time), \code{auc_l} is the area
+under the logistic curve obtained by taking the integral of the logistic equation, and \code{auc_e} is
+the empirical area under the curve which is obtained by summing up the area under the experimental
+curve from the measurements in the input data. If you decide to use auc_l or auc_e, make sure that
+you specify the parameter t_trim so that these metrics are comparable across samples or plates that
+were grown for different lengths of time.
+
+The note value provides additional information about problems with fitting the logistic curve to
+your data. No common problems were identified if it is empty.
+}
