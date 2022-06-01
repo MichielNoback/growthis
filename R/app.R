@@ -178,7 +178,7 @@ shiny_app_server <- function(input, output, session) {
                     filter(series == input$model_plot_exp_selection_single)
             }
 
-            all_model_data <<- model_dose_response(growth_params = growth_params_tibble,
+            all_model_data <- model_dose_response(growth_params = growth_params_tibble,
                                                   dependent_var = input$model_plot_dependent_var_selection_single,
                                                   nls_trace = FALSE)
 
