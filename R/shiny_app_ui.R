@@ -49,13 +49,30 @@ single_statistics_analysis_tab <- shiny::fluidPage(
 
 
 multi_statistics_tab <- shiny::fluidPage(
-    shiny::actionButton(inputId = "show_statistics_multiple",
-                        label = "Calculate statistics",
-                        icon = shiny::icon("chart-area"),
-                        width = 150),
+    # shiny::actionButton(inputId = "show_statistics_multiple",
+    #                     label = "Calculate statistics",
+    #                     icon = shiny::icon("chart-area"),
+    #                     width = 150),
     shiny::downloadButton(outputId = "growth_statistics_multiple_download",
                           label = "Download as csv"),
     DT::dataTableOutput(outputId = "growth_params_multiple")
+)
+
+multi_statistics_analysis_tab <- shiny::fluidPage(
+    shiny::h4("Visualize"),
+    shiny::div(style="display: inline-block;vertical-align:top; width: 200px;",
+               shiny::selectInput(inputId = "model_plot_dependent_var_selection_multi",
+                                  label = "Variable to model on",
+                                  choices = c("AUC_l", "AUC_e", "yield"),
+                                  selected = "AUC_l")),
+    shiny::br(),
+
+    shiny::div(style="display: inline-block;vertical-align:top;width:900px;!important",
+               shiny::plotOutput("yield_over_concentration_plot_multi", width = "900px", height="600px")),
+    #    plotly::plotlyOutput("yield_over_concentration_plot_single", width = "1000px", height="700px")
+
+    shiny::div(style="display: inline-block;vertical-align:top; width: 500px;",
+               shiny::verbatimTextOutput(outputId = "model_info_multi"))
 )
 
 #clickable grid for selection of wells in the 96 wells layout

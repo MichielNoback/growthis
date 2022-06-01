@@ -47,7 +47,8 @@ do_growth_analysis <- function(varioscan) {
 #' @export
 #'
 model_dose_response <- function(growth_params,
-                                dependent_var,
+                                dependent_var = "AUC_l",
+                                data_key = "series",
                                 nls_trace = FALSE) {
     if(! dependent_var %in% c("AUC_l", "AUC_e", "K", "yield")) {
         stop(paste0("this dependent variable can not be modeled: "), dependent_var)
@@ -64,46 +65,47 @@ model_dose_response <- function(growth_params,
     all_IC50_IC90 <- list()
 
     message(paste0("modeling on ", dependent_var))
-    for(current_series in unique(growth_params$series)) {
-        message(paste0("analysing: ", current_series))
+
+    for(current_key in unique(pull(growth_params, {{data_key}}))) {
+        message(paste0("analysing: ", current_key, "\n"))
 
         series_data <- growth_params %>%
-            filter(series == current_series) %>%
+            filter(.data[[data_key]] == current_key) %>%
             mutate(dilution = as.numeric(dilution))
         #print(series_data)
 
         ## Build model
         if(dependent_var == "yield") {
             default_power <- 3
-            the_model <- build_model(series = current_series,
-                                           series_data = series_data,
-                                           dilution_seq = dilution_seq,
-                                           dependent_var = dependent_var,
-                                           default_power = default_power,
-                                           nls_trace = nls_trace)
+            the_model <- build_model(series = current_key,
+                                   series_data = series_data,
+                                   dilution_seq = dilution_seq,
+                                   dependent_var = dependent_var,
+                                   default_power = default_power,
+                                   nls_trace = nls_trace)
         } else {
             default_power <- 2
-            the_model <- build_model(series = current_series,
-                                           series_data = series_data,
-                                           dilution_seq = dilution_seq,
-                                           dependent_var = dependent_var,
-                                           default_power = default_power,
-                                           nls_trace = nls_trace)
+            the_model <- build_model(series = current_key,
+                                   series_data = series_data,
+                                   dilution_seq = dilution_seq,
+                                   dependent_var = dependent_var,
+                                   default_power = default_power,
+                                   nls_trace = nls_trace)
         }
 
-        all_models[[current_series]] <- the_model
+        all_models[[current_key]] <- the_model
 
         ## Predict
         model_data <- data.frame(dilution = dilution_seq)
-        model_data$series <- current_series
+        model_data$series <- current_key
         model_data$predicted <- predict(the_model, newdata = model_data)
-        fitted_data[[current_series]] <- model_data
+        fitted_data[[current_key]] <- model_data
 
         ## Get metadata
         #init_H0 = max(series_data$yield)
-        all_IC50_IC90[[current_series]] <- calculate_series_meta_data(current_series, the_model, default_power)
+        all_IC50_IC90[[current_key]] <- calculate_series_meta_data(current_key, the_model, default_power)
 
-        # all_IC50_IC90[[current_series]] <- series_meta_data
+        # all_IC50_IC90[[current_key]] <- series_meta_data
     }
 
     #print(str(results))
@@ -161,7 +163,7 @@ build_model <- function(series,
 
 
 #' Calculates IC50 and IC90
-calculate_series_meta_data <- function(current_series, the_model, default_power){
+calculate_series_meta_data <- function(current_key, the_model, default_power){
     ## calculate IC90 and IC50
     found_r <- coef(the_model)["r"]
     found_H0 <- coef(the_model)["H0"]
@@ -183,7 +185,7 @@ calculate_series_meta_data <- function(current_series, the_model, default_power)
     dilution_IC50 <- (log(IC50 / found_H0) / -found_r)^(1/power)
     dilution_IC90 <- (log(IC90 / found_H0) / -found_r)^(1/power)
 
-    series_meta_data <- data.frame(series = current_series,
+    series_meta_data <- data.frame(series = current_key,
                                    IC50 = round(dilution_IC50, 4),
                                    IC90 = round(dilution_IC90, 4))
     #print(series_meta_data)
