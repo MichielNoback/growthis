@@ -136,53 +136,54 @@ plot_growth_statistics <- function(growth_params_tibble, variable_name, do_scale
 plot_dependent_var_over_concentration <- function(growth_params_tibble,
                                                   all_model_data,
                                                   dependent_var = "yield",
+                                                  data_key = "series",
                                                   exp = "all") {
     #Plot van yield (y) over Concentration (X), met daarin (optioneel) de IC50/IC90.
 
     #all_model_data <- model_dose_response(growth_params_tibble, dependent_var)
-
+    growth_params_tibble <- mutate(growth_params_tibble, dilution = as.numeric(dilution))
     fitted_data <- all_model_data$fitted_data
 
     max_y <- max(growth_params_tibble[, dependent_var])
-    relative_y_positions <- c(1, 0.92, 0.84, 0.76, 0.68, 0.6)[1 : (2 * length(unique(growth_params_tibble$series)))]
+    possible_y_positions <- seq(1, 0, by = -0.06)
+    relative_y_positions <- possible_y_positions[1 : (2 * length(unique(all_model_data$IC50_IC90[, data_key])))]
     #print(relative_y_positions)
     IC50_IC90_data <- all_model_data$IC50_IC90 %>%
-        tidyr::pivot_longer(cols = 2:3,
+        tidyr::pivot_longer(cols = c(IC50, IC90),
                             names_to = "criterion",
                             values_to = "dilution") %>%
         dplyr::arrange(dilution) %>%
         dplyr::mutate(label = paste0(criterion, "=", dilution),
                       y_pos = relative_y_positions * max_y)
-    #print(IC50_IC90_data)
-    #print(model_data)
 
+    #print(IC50_IC90_data)
+    #print(data_key)
+    #print(growth_params_tibble)
+    #print(sort(unique(growth_params_tibble$dilution)))
     p <- ggplot(data = growth_params_tibble,
-                mapping = aes_string(x = "dilution", y = dependent_var, color = "series")) +
-        geom_vline(mapping = aes(xintercept = dilution, color = series),
+                mapping = aes_string(x = "dilution", y = dependent_var, color = data_key)) + #"series"
+        geom_vline(mapping = aes_string(xintercept = "dilution", color = data_key),
                    linetype = "dotted",
                    data = IC50_IC90_data,
                    size = 1) +
         geom_label(data = IC50_IC90_data,
-                   mapping = aes(x = dilution,
-                                 y = y_pos,
-                                 color = series,
-                                 label = label),
+                   mapping = aes_string(x = "dilution",
+                                 y = "y_pos",
+                                 color = data_key,
+                                 label = "label"),
 
                    hjust = "left",
                    size = 6) +
         geom_line(data = fitted_data,
-                  mapping = aes(x = dilution, y = predicted, color = series), size = 1) +
+                  mapping = aes_string(x = "dilution", y = "predicted", color = data_key), size = 1) +
         geom_point(mapping = aes(shape = replicate), alpha = 0.7, size = 3) +
-        scale_x_sqrt() +
+        scale_x_sqrt(breaks = unique(growth_params_tibble$dilution),
+                           guide = guide_axis(angle = 90)) +
+        theme(axis.text.x = element_text(angle = 90)) +
         theme_minimal(base_size = 18)
 
     return(p)
 }
-
-
-
-
-
 
 
 

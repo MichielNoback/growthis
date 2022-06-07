@@ -25,26 +25,32 @@ single_statistics_tab <- shiny::fluidPage(
 
 
 single_statistics_analysis_tab <- shiny::fluidPage(
+    tags$head(tags$style(HTML("#model_info_single {font-size: 1.2em;}"))),
     shiny::h4("Visualize"),
-    shiny::div(style="display: inline-block;vertical-align:top; width: 200px;",
+    shiny::div(style="display:inline-block;vertical-align:top; width: 200px;",
                shiny::selectInput(inputId = "model_plot_dependent_var_selection_single",
                                   label = "Variable to model on",
                                   choices = c("AUC_l", "AUC_e", "yield"),
                                   selected = "AUC_l")),
 
-    shiny::div(style="display: inline-block;vertical-align:top; width: 200px;",
+    shiny::div(style="display:inline-block;vertical-align:top; width: 200px;",
                shiny::selectInput(inputId = "model_plot_exp_selection_single",
                        label = "Select dataseries",
                        choices = c("all", "Exp1", "Exp2", "Exp3"),
                        selected = "all")),
     shiny::br(),
 
-    shiny::div(style="display: inline-block;vertical-align:top;width:900px;!important",
-               shiny::plotOutput("yield_over_concentration_plot_single", width = "900px", height="600px")),
-#    plotly::plotlyOutput("yield_over_concentration_plot_single", width = "1000px", height="700px")
+    shiny::plotOutput("yield_over_concentration_plot_single", width = "1000px", height="600px"),
+    shiny::br(),
+    shiny::h4("Parameters of the models"),
+    shiny::verbatimTextOutput(outputId = "model_info_single", )
 
-    shiny::div(style="display: inline-block;vertical-align:top; width: 500px;",
-           shiny::verbatimTextOutput(outputId = "model_info_single"))
+#     shiny::div(style="display:inline-block;vertical-align:top;",
+#                shiny::plotOutput("yield_over_concentration_plot_single", width = "1000px", height="600px", inline=TRUE)),
+# #    plotly::plotlyOutput("yield_over_concentration_plot_single", width = "1000px", height="700px")
+#
+#     shiny::div(style="display:inline-block;vertical-align:top; width: 500px;",
+#            shiny::verbatimTextOutput(outputId = "model_info_single"))
 )
 
 
@@ -59,6 +65,7 @@ multi_statistics_tab <- shiny::fluidPage(
 )
 
 multi_statistics_analysis_tab <- shiny::fluidPage(
+    tags$head(tags$style(HTML("#model_info_multi {font-size: 1.2em;}"))),
     shiny::h4("Visualize"),
     shiny::div(style="display: inline-block;vertical-align:top; width: 200px;",
                shiny::selectInput(inputId = "model_plot_dependent_var_selection_multi",
@@ -66,13 +73,10 @@ multi_statistics_analysis_tab <- shiny::fluidPage(
                                   choices = c("AUC_l", "AUC_e", "yield"),
                                   selected = "AUC_l")),
     shiny::br(),
-
-    shiny::div(style="display: inline-block;vertical-align:top;width:900px;!important",
-               shiny::plotOutput("yield_over_concentration_plot_multi", width = "900px", height="600px")),
-    #    plotly::plotlyOutput("yield_over_concentration_plot_single", width = "1000px", height="700px")
-
-    shiny::div(style="display: inline-block;vertical-align:top; width: 500px;",
-               shiny::verbatimTextOutput(outputId = "model_info_multi"))
+    shiny::plotOutput("yield_over_concentration_plot_multi", width = "1000px", height="600px"),
+    shiny::br(),
+    shiny::h4("Parameters of the models"),
+    shiny::verbatimTextOutput(outputId = "model_info_multi")
 )
 
 #clickable grid for selection of wells in the 96 wells layout
@@ -204,6 +208,7 @@ multi_exp_tab <- shiny::fluidPage(
             shiny::tabsetPanel(type = "tabs",
                                shiny::tabPanel("Growth curves", multi_growthcurve_box),
                                shiny::tabPanel("Growth statistics", multi_statistics_tab),
+                               shiny::tabPanel("Growth statistics analysis", multi_statistics_analysis_tab)
             )
         )
     )

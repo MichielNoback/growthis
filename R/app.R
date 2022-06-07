@@ -137,8 +137,7 @@ shiny_app_server <- function(input, output, session) {
         })
         user_data$growth_params_multi <- do_growth_analysis(user_data$filtered_data_multi)
 
-        #temp
-        growth_params_multi <<- user_data$growth_params_multi
+        growth_params_multi <- user_data$growth_params_multi
 
         output$growth_params_multiple <- DT::renderDataTable({
             DT::datatable(user_data$growth_params_multi,
@@ -146,6 +145,32 @@ shiny_app_server <- function(input, output, session) {
                 DT::formatRound(columns = c(5,6,7,10,12,13), digits = 2, interval = 10) %>%
                 DT::formatSignif(columns = c(8,9,11,14,16), digits = 2)
         })
+
+
+        ## inputId = "model_plot_dependent_var_selection_multi", "yield_over_concentration_plot_multi", outputId = "model_info_multi"
+
+        ## model and plot predictions
+        # create data_key
+        growth_params_multi <- tidyr::unite(data = growth_params_multi,
+                                            col = "date_series",
+                                            date_started, series,
+                                            sep = " ",
+                                            remove = FALSE)
+
+        all_model_data <- model_dose_response(growth_params = growth_params_multi,
+                                              dependent_var = input$model_plot_dependent_var_selection_multi,
+                                              data_key = "date_series",
+                                              nls_trace = FALSE)
+
+        output$yield_over_concentration_plot_multi <- shiny::renderPlot({
+            plot_dependent_var_over_concentration(growth_params_multi,
+                                                  all_model_data = all_model_data,
+                                                  data_key = "date_series",
+                                                  dependent_var = input$model_plot_dependent_var_selection_multi)
+        })
+
+        output$model_info_multi <- shiny::renderPrint(all_model_data$models)
+
     })
 
     ## listens to experiment selection changes as reactive of user_data$selected experiment
@@ -175,18 +200,17 @@ shiny_app_server <- function(input, output, session) {
             shiny::updateSelectInput(inputId = "growth_params_plot_variable_single",
                                      choices = names(growth_params_single)[5:14])
 
-            growth_params_tibble <- mutate(user_data$growth_params_single, dilution = as.numeric(dilution))
             if(input$model_plot_exp_selection_single != "all") {
-                growth_params_tibble <- growth_params_tibble %>%
+                growth_params_single <- growth_params_single %>%
                     filter(series == input$model_plot_exp_selection_single)
             }
 
-            all_model_data <- model_dose_response(growth_params = growth_params_tibble,
+            all_model_data <- model_dose_response(growth_params = growth_params_single,
                                                   dependent_var = input$model_plot_dependent_var_selection_single,
                                                   nls_trace = FALSE)
 
             output$yield_over_concentration_plot_single <- shiny::renderPlot({ # plotly::renderPlotly({
-                plot_dependent_var_over_concentration(growth_params_tibble,
+                plot_dependent_var_over_concentration(growth_params_single,
                                                       all_model_data = all_model_data,
                                                       dependent_var = input$model_plot_dependent_var_selection_single,
                                                       exp = input$model_plot_exp_selection_single)
