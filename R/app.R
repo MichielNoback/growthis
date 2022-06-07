@@ -137,7 +137,7 @@ shiny_app_server <- function(input, output, session) {
         })
         user_data$growth_params_multi <- do_growth_analysis(user_data$filtered_data_multi)
 
-        growth_params_multi <- user_data$growth_params_multi
+        #growth_params_multi <- user_data$growth_params_multi
 
         output$growth_params_multiple <- DT::renderDataTable({
             DT::datatable(user_data$growth_params_multi,
@@ -146,32 +146,48 @@ shiny_app_server <- function(input, output, session) {
                 DT::formatSignif(columns = c(8,9,11,14,16), digits = 2)
         })
 
-
-        ## inputId = "model_plot_dependent_var_selection_multi", "yield_over_concentration_plot_multi", outputId = "model_info_multi"
-
-        ## model and plot predictions
-        # create data_key
-        growth_params_multi <- tidyr::unite(data = growth_params_multi,
-                                            col = "date_series",
-                                            date_started, series,
-                                            sep = " ",
-                                            remove = FALSE)
-
-        all_model_data <- model_dose_response(growth_params = growth_params_multi,
-                                              dependent_var = input$model_plot_dependent_var_selection_multi,
-                                              data_key = "date_series",
-                                              nls_trace = FALSE)
-
-        output$yield_over_concentration_plot_multi <- shiny::renderPlot({
-            plot_dependent_var_over_concentration(growth_params_multi,
-                                                  all_model_data = all_model_data,
-                                                  data_key = "date_series",
-                                                  dependent_var = input$model_plot_dependent_var_selection_multi)
-        })
-
-        output$model_info_multi <- shiny::renderPrint(all_model_data$models)
+        ##trigger update of dependent variable plot
+        shinyWidgets::updatePickerInput(inputId = "model_plot_dependent_var_selection_multi",
+                                        selected = "AUC_l",
+                                        session = session)
 
     })
+
+    ## Takes care of updating the plot showing modeled data on dilution
+    shiny::observeEvent(input$model_plot_dependent_var_selection_multi, {
+        shiny::req(input$strains_multiple, input$extracts_multiple)
+
+        message_helper("Changed dependent variable", input$model_plot_dependent_var_selection_multi)
+
+        if(input$model_plot_dependent_var_selection_multi != "select one" &&
+                nrow(user_data$growth_params_multi) > 1) {
+            growth_params_multi <- user_data$growth_params_multi
+
+            ## model and plot predictions
+            # create data_key
+            growth_params_multi <- tidyr::unite(data = growth_params_multi,
+                                                col = "date_series",
+                                                date_started, series,
+                                                sep = " ",
+                                                remove = FALSE)
+
+            all_model_data <- model_dose_response(growth_params = growth_params_multi,
+                                                  dependent_var = input$model_plot_dependent_var_selection_multi,
+                                                  data_key = "date_series",
+                                                  nls_trace = FALSE)
+
+            output$yield_over_concentration_plot_multi <- shiny::renderPlot({
+                plot_dependent_var_over_concentration(growth_params_multi,
+                                                      all_model_data = all_model_data,
+                                                      data_key = "date_series",
+                                                      dependent_var = input$model_plot_dependent_var_selection_multi)
+            })
+
+            output$model_info_multi <- shiny::renderPrint(all_model_data$models)
+        }
+    })
+
+
 
     ## listens to experiment selection changes as reactive of user_data$selected experiment
     shiny::observe({
