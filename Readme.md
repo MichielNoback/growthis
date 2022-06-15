@@ -41,7 +41,7 @@ Here are the steps (with some explanation):
     R will probably "ask" you to update some (or quite a few) packages. You should preferably select `All` (option 1). This may take a while on some systems. Don't be scared of all the text running by. However, if the stream stops and it say "Error..." something has gone wrong and you should ask a more experienced colleague for help.
 5. Test it. Type `library(growthis)` and press Enter. This will load the growthis package. If it prints 
     `Error in library(growthis) : there is no package called ‘growthis’` something has gone wrong in step 4 (or before). Try the installation again, reading carefully any warning and error messages. If that fails, try to get help at this point.  
-6. Test it for real. Type `shiny_app()` and press Enter. This will run the Shiny app. 
+6. Test it for real. Type `shiny_app(launch_browser = TRUE)` and press Enter. This will run the Shiny app. 
    You may get an error message like this:
    
     ```
@@ -66,11 +66,12 @@ These steps will need to be repeated every time you start RStudio to work with t
 In the Console panel, type these commands.    
 
 1. Type `library(growthis)` and press Enter. 
-2. Type `shiny_app()` and press Enter. 
+2. Type `shiny_app(launch_browser = TRUE)` and press Enter. 
 
-Alternatively, you can start the app in one command: `growthis::shiny_app()` and press Enter.
+Alternatively, you can start the app in one command: `growthis::shiny_app(launch_browser = TRUE)` and press Enter.
+You can also run the command `shiny_app()` and then open the URL (adress) which is reported in the console manually (`http://127.0.0.1:3838`).  
 
-You can quit the app by pressing the Escape key in the Console. The browser tab should be closed as well. It is not active anymore. Only closing the browser tab will not shut down the app.
+Quit the app by pressing the Escape key in the Console. The browser tab should be closed as well. It is not active anymore. Only closing the browser tab will not shut down the app. Note that an (inactive) running app in RStudio may drain the battery of your laptop.
 
 
 ### Updating the `growthis` package
