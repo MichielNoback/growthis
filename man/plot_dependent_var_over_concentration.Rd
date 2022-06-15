@@ -8,6 +8,7 @@ plot_dependent_var_over_concentration(
   growth_params_tibble,
   all_model_data,
   dependent_var = "yield",
+  data_key = "series",
   exp = "all"
 )
 }

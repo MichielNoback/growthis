@@ -4,7 +4,7 @@
 \alias{calculate_series_meta_data}
 \title{Calculates IC50 and IC90}
 \usage{
-calculate_series_meta_data(current_series, the_model, default_power)
+calculate_series_meta_data(current_key, the_model, default_power, data_key)
 }
 \description{
 Calculates IC50 and IC90

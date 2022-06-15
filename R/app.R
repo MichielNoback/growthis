@@ -1,5 +1,6 @@
 #' starts the shiny app
 #'
+#' @export
 #'
 shiny_app <- function(launch_browser = FALSE, port = 3838) {
     shiny::runApp(list(ui = shiny_app_ui,

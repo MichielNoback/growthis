@@ -4,7 +4,12 @@
 \alias{model_dose_response}
 \title{Models the yield as a function of dilution}
 \usage{
-model_dose_response(growth_params, dependent_var, nls_trace = FALSE)
+model_dose_response(
+  growth_params,
+  dependent_var = "AUC_l",
+  data_key = "series",
+  nls_trace = FALSE
+)
 }
 \arguments{
 \item{growth_params}{the tibble with growth parameters (a result of \code{do_growth_analysis()})}
