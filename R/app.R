@@ -153,7 +153,7 @@ shiny_app_server <- function(input, output, session) {
 
     })
 
-    ## Takes care of updating the plot showing modeled data on dilution
+    ## Takes care of updating the plot showing modelled data on dilution
     shiny::observeEvent(input$model_plot_dependent_var_selection_multi, {
         shiny::req(input$strains_multiple, input$extracts_multiple)
 

@@ -29,7 +29,8 @@ Imports:
     tidyr,
     magrittr,
     viridis,
-    data.table
+    data.table,
+    plotly
 Depends: 
     R (>= 2.10)
 LazyData: true
