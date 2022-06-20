@@ -70,7 +70,8 @@ read_experiment_data <- function(xlsx_file) {
 #' @param xlsx_file A varioscan data file
 #' @param dilutions the dilutions used in the subsequent rows for dose-response studies
 #' @param time_interval the time interval, in minutes, between each reading
-#' @return all data in long format
+#'
+#' @return all data, in long format
 #'
 #' @export
 #'

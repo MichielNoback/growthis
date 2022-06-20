@@ -19,6 +19,8 @@ plot_dependent_var_over_concentration(
 
 \item{dependent_var}{the dependent variable to plot on the y axis Can be one of "AUC_l", "AUC_e", "yield"}
 
+\item{data_key}{the variable to split out on usng color. Defaults to "series".}
+
 \item{exp}{the experiment (series) to plot}
 }
 \description{

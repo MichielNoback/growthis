@@ -18,7 +18,7 @@ read_varioscan(
 \item{time_interval}{the time interval, in minutes, between each reading}
 }
 \value{
-all data in long format
+all data, in long format
 }
 \description{
 Reads varioscan data from a given excel file. Assumes data is arranged in 96-well format (8 rows and 12 columns). It also assumes a triplicate experimental setup: 3 curves in triplo, each with a control at the fourth column. If the "General_info" tab does not contain metadata at the correct location (see below), the \code{experiments} argument will be used for the labeling.

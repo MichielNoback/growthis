@@ -1,3 +1,7 @@
+## This was in development but I decided to drop this line of work.
+## Not ready to delete everything, yet
+
+
 #' Constructor for varioscan data object
 #'
 #'

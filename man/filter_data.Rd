@@ -24,7 +24,7 @@ filter_data(
 
 \item{experiment_dates}{the start date values to include}
 
-\item{exclude}{a list indicating which series/dilution/replicate should be excluded. Defaults to "none".
+\item{exclude_wells}{a list indicating which series/dilution/replicate should be excluded. Defaults to "none".
 See details.}
 }
 \value{

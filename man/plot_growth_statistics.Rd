@@ -9,9 +9,9 @@ plot_growth_statistics(growth_params_tibble, variable_name, do_scale = FALSE)
 \arguments{
 \item{growth_params_tibble}{a tibble containing results of growth statistics analysis.}
 
-\item{do_scale}{a logical indicating wheter the data should be scaled}
+\item{variable_name}{the variable to create a heatmap for}
 
-\item{variable}{the variable to create a heatmap for}
+\item{do_scale}{a logical indicating wheter the data should be scaled}
 }
 \description{
 Creates a heatmap based on a selected variable of a growth statistics dataset

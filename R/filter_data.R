@@ -12,7 +12,7 @@
 #' @param strains the bacterial strains to include. Defaults to all strains.
 #' @param replicates the replicates to include. Defaults to all replicates.
 #' @param experiment_dates the start date values to include
-#' @param exclude a list indicating which series/dilution/replicate should be excluded. Defaults to "none".
+#' @param exclude_wells a list indicating which series/dilution/replicate should be excluded. Defaults to "none".
 #' See details.
 #' @return filtered data with same columns
 #'
@@ -185,9 +185,3 @@ exclude_data <- function(data, exclude) {
 
     return(data)
 }
-
-
-foo <- function() {
-    print("foo")
-}
-

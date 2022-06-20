@@ -1,7 +1,7 @@
 #' The experiments, with their dates and descriptions
 #'
 #' There are multiple indivdual datasets available that are not documented individually.
-#' They are identified by their run date. Simply type growthis:: in the console to discover them, or use the Shiny app.
+#' They are identified by their run date, e.g. `growthis::\\`12-11-2021\\``. Simply type growthis:: in the console to discover them, or use the Shiny app.
 #'
 #' @format A tibble frame with 20,928 rows and 10 variables, in long format
 #' \describe{

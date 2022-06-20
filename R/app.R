@@ -1,5 +1,11 @@
 #' starts the shiny app
 #'
+#' The Shiny app is a GUI wrapper around the main functionality of this package
+#'
+#' @param launch_browser logi flagging whether to launch the default browser of
+#' this device and open the app in it.
+#' @param port the port to listen to.
+#'
 #' @export
 #'
 shiny_app <- function(launch_browser = FALSE, port = 3838) {
@@ -9,10 +15,8 @@ shiny_app <- function(launch_browser = FALSE, port = 3838) {
                   port = port)
 }
 
-#shiny::shinyApp(ui = shiny_app_ui, server = shiny_app_server)
 
-
-#not exported server function
+#not exported server function for the Shiny app.
 shiny_app_server <- function(input, output, session) {
     ui_glyphs <- get_ui_glyphs()
 

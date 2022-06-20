@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-pipe.R
 \name{\%>\%}
 \alias{\%>\%}
-\title{Pipe operator}
+\title{Imports the pipe operator}
 \usage{
 lhs \%>\% rhs
 }

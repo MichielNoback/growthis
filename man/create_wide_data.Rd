@@ -10,5 +10,5 @@ create_wide_data(varioscan)
 \item{varioscan}{the varioscan data in long format}
 }
 \description{
-This function will export the background_corrected data only.
+This function will export the background-corrected data only.
 }

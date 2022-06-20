@@ -38,6 +38,25 @@ do_growth_analysis <- function(varioscan) {
     return(growth_params)
 }
 
+
+#' Pivot wider and mutate to match requirements of the `growthcurver` package
+#'
+#' This function will export the background-corrected data only.
+#'
+#' @param varioscan the varioscan data in long format
+#'
+#' @export
+#'
+create_wide_data <- function(varioscan) {
+    wide_format <- varioscan %>%
+        dplyr::filter(replicate %in% c("1C", "2C", "3C")) %>%
+        dplyr::mutate(ID = paste(start_date, series, dilution, replicate, sep = "_"),
+                      time = as.numeric(duration)) %>%
+        dplyr::select(time, ID, OD) %>%
+        tidyr::pivot_wider(names_from = ID, values_from = OD)
+    return(wide_format)
+}
+
 #' Models the yield as a function of dilution
 #'
 #' @param growth_params the tibble with growth parameters (a result of `do_growth_analysis()`)
@@ -240,6 +259,7 @@ determine_growth_params <- function(wide_format_data) {
     return(fitted_models)
 }
 
+#' Not exported helper function
 determine_yield <- function(wide_format) {
     yields <- apply(X = wide_format[, -1],
                     MARGIN = 2,
@@ -248,22 +268,4 @@ determine_yield <- function(wide_format) {
 }
 
 
-
-#' Pivot wider and mutate to match requirements of the `growthcurver` package
-#'
-#' This function will export the background_corrected data only.
-#'
-#' @param varioscan the varioscan data in long format
-#'
-#' @export
-#'
-create_wide_data <- function(varioscan) {
-    wide_format <- varioscan %>%
-    dplyr::filter(replicate %in% c("1C", "2C", "3C")) %>%
-    dplyr::mutate(ID = paste(start_date, series, dilution, replicate, sep = "_"),
-                  time = as.numeric(duration)) %>%
-    dplyr::select(time, ID, OD) %>%
-    tidyr::pivot_wider(names_from = ID, values_from = OD)
-    return(wide_format)
-}
 

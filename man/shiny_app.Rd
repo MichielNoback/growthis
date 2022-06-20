@@ -6,6 +6,12 @@
 \usage{
 shiny_app(launch_browser = FALSE, port = 3838)
 }
+\arguments{
+\item{launch_browser}{logi flagging whether to launch the default browser of
+this device and open the app in it.}
+
+\item{port}{the port to listen to.}
+}
 \description{
-starts the shiny app
+The Shiny app is a GUI wrapper around the main functionality of this package
 }

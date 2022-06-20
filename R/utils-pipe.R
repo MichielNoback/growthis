@@ -1,4 +1,4 @@
-#' Pipe operator
+#' Imports the pipe operator
 #'
 #' See \code{magrittr::\link[magrittr:pipe]{\%>\%}} for details.
 #'
