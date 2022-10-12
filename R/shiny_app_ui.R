@@ -6,11 +6,11 @@ single_statistics_tab <- shiny::fluidPage(
     #                     label = "Calculate statistics",
     #                     icon = shiny::icon("chart-area"),
     #                     width = 150),
-    br(),
+    shiny::br(),
     shiny::downloadButton(outputId = "growth_statistics_single_download",
                                       label = "Download as csv"),
     DT::dataTableOutput(outputId = "growth_params_single"),
-    br(),
+    shiny::br(),
     shiny::h4("Visualize"),
     shiny::radioButtons(inputId = "growth_params_plot_scaled_single",
                                    label =  "Scale data",
@@ -25,7 +25,7 @@ single_statistics_tab <- shiny::fluidPage(
 
 
 single_statistics_analysis_tab <- shiny::fluidPage(
-    tags$head(tags$style(HTML("#model_info_single {font-size: 1.2em;}"))),
+    shiny::tags$head(shiny::tags$style(shiny::HTML("#model_info_single {font-size: 1.2em;}"))),
     shiny::h4("Visualize"),
     shiny::div(style="display:inline-block;vertical-align:top; width: 200px;",
                shiny::selectInput(inputId = "model_plot_dependent_var_selection_single",
@@ -65,7 +65,7 @@ multi_statistics_tab <- shiny::fluidPage(
 )
 
 multi_statistics_analysis_tab <- shiny::fluidPage(
-    tags$head(tags$style(HTML("#model_info_multi {font-size: 1.2em;}"))),
+    shiny::tags$head(shiny::tags$style(shiny::HTML("#model_info_multi {font-size: 1.2em;}"))),
     shiny::h4("Visualize"),
     shiny::div(style="display: inline-block;vertical-align:top; width: 200px;",
                shinyWidgets::pickerInput(inputId = "model_plot_dependent_var_selection_multi",
@@ -89,11 +89,11 @@ well_selection_box <- shinydashboard::box(
     id = "well_selection_box",
             #style='width:600px;overflow-x: scroll;overflow-y: scroll;',
             DT::dataTableOutput("well_selection"),
-            br(),
+            shiny::br(),
             shinyWidgets::actionBttn(inputId = "remove_wells_button",
                                      label = "Remove selection",
                                      style = "fill",
-                                     icon = icon("warning-sign", lib = "glyphicon"),
+                                     icon = shiny::icon("warning-sign", lib = "glyphicon"),
                                      color = "danger")
 
 )
@@ -109,7 +109,7 @@ single_growthcurve_box <- shinydashboard::box(
     shiny::plotOutput(outputId = "growthcurve_plot_single",
                     width = "1100px", height="700px"),
 #    shinyjs::hidden(div(id = "well_selection_box_wrapper",
-                        tags$style(HTML('.plate_layout th, .plate_layout td {padding: 4px !important; background-color: floralwhite !important;}')),
+                        shiny::tags$style(shiny::HTML('.plate_layout th, .plate_layout td {padding: 4px !important; background-color: floralwhite !important;}')),
                         well_selection_box,
 #)),
     shiny::tags$div(id = "well_selector_div")
@@ -124,7 +124,7 @@ multi_growthcurve_box <- shinydashboard::box(
                         inline = TRUE),
     shiny::plotOutput(outputId = "growthcurve_plot_multiple",
                       width = "1000px", height="1200px"),
-    br()
+    shiny::br()
 )
 
 
