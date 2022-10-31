@@ -90,12 +90,14 @@ model_dose_response <- function(growth_params,
         message(paste0("analysing: ", current_key))
 
         series_data <- growth_params %>%
-            filter(.data[[data_key]] == current_key)
-        #print(series_data)
+            filter(.data[[data_key]] == current_key) #%>%
+            #filter(.data[[dependent_var]] != 0)
+        print(series_data, n = Inf)
 
         ## Build model
         if(dependent_var == "yield") {
             default_power <- 3
+
             the_model <- build_model(series = current_key,
                                    series_data = series_data,
                                    dilution_seq = dilution_seq,
@@ -104,20 +106,22 @@ model_dose_response <- function(growth_params,
                                    nls_trace = nls_trace)
         } else {
             default_power <- 2
-            the_model <- build_model(series = current_key,
-                                   series_data = series_data,
-                                   dilution_seq = dilution_seq,
-                                   dependent_var = dependent_var,
-                                   default_power = default_power,
-                                   nls_trace = nls_trace)
-        }
 
+            the_model <- build_model(
+                series = current_key,
+                series_data = series_data,
+                dilution_seq = dilution_seq,
+                dependent_var = dependent_var,
+                default_power = default_power,
+                nls_trace = nls_trace
+            )
+        }
         all_models[[current_key]] <- the_model
 
         ## Predict
         model_data <- data.frame(dilution = dilution_seq)
         model_data[, data_key] <- current_key
-        model_data$predicted <- predict(the_model, newdata = model_data)
+
         fitted_data[[current_key]] <- model_data
 
         ## Get metadata
@@ -147,6 +151,7 @@ build_model <- function(series,
     #print(dependent_var)
     first_formula <- paste0(dependent_var, " ~ H0 * exp(-r * dilution^", default_power, ")")
     #print(first_formula)
+
     ## generate first model to get values for H0 and r
     first_model <- nls(formula = first_formula, #
                         data = series_data,
