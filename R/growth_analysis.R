@@ -51,7 +51,7 @@ create_wide_data <- function(varioscan) {
     wide_format <- varioscan %>%
         dplyr::filter(replicate %in% c("1C", "2C", "3C")) %>%
         dplyr::mutate(ID = paste(start_date, series, dilution, replicate, sep = "_"),
-                      time = as.numeric(duration)) %>%
+                      time = lubridate::time_length(duration, unit="minutes")) %>% #as.numeric(duration)) %>%
         dplyr::select(time, ID, OD) %>%
         tidyr::pivot_wider(names_from = ID, values_from = OD)
     return(wide_format)
@@ -92,7 +92,7 @@ model_dose_response <- function(growth_params,
         series_data <- growth_params %>%
             filter(.data[[data_key]] == current_key) #%>%
             #filter(.data[[dependent_var]] != 0)
-        print(series_data, n = Inf)
+        #print(series_data, n = 3)
 
         ## Build model
         if(dependent_var == "yield") {
@@ -121,12 +121,15 @@ model_dose_response <- function(growth_params,
         ## Predict
         model_data <- data.frame(dilution = dilution_seq)
         model_data[, data_key] <- current_key
-
+        model_data$predicted <- predict(the_model, newdata = model_data)
         fitted_data[[current_key]] <- model_data
 
         ## Get metadata
         #init_H0 = max(series_data$yield)
-        all_IC50_IC90[[current_key]] <- calculate_series_meta_data(current_key, the_model, default_power, data_key)
+        all_IC50_IC90[[current_key]] <- calculate_series_meta_data(current_key,
+                                                                   the_model,
+                                                                   default_power,
+                                                                   data_key)
 
         # all_IC50_IC90[[current_key]] <- series_meta_data
     }

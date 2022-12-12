@@ -77,7 +77,6 @@ plot_dependent_var_over_concentration <- function(growth_params_tibble,
     #all_model_data <- model_dose_response(growth_params_tibble, dependent_var)
     growth_params_tibble <- mutate(growth_params_tibble, dilution = as.numeric(dilution))
     fitted_data <- all_model_data$fitted_data
-
     max_y <- max(growth_params_tibble[, dependent_var])
     possible_y_positions <- seq(1, 0, by = -0.06)
     relative_y_positions <- possible_y_positions[1 : (2 * length(unique(all_model_data$IC50_IC90[, data_key])))]
