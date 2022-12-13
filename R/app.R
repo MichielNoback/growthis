@@ -187,7 +187,6 @@ shiny_app_server <- function(input, output, session) {
                                                       data_key = "date_series",
                                                       dependent_var = input$model_plot_dependent_var_selection_multi)
             })
-
             output$model_info_multi <- shiny::renderPrint(all_model_data$models)
         }
     })
