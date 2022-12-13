@@ -133,13 +133,14 @@ exclude_data <- function(data, exclude) {
 
         ## determine new value for this well based on mean value of
         ## 6000 <= t <= 8400
+        ## UPDATED TO 1.66667 <= t <= 2.33333
         ODs_for_new_control <- data %>%
             # tidyr::pivot_wider(names_from = replicate, values_from = OD) %>%
             dplyr::filter(start_date == exclude$start_date &
                           series == exclude$series &
                           dilution == exclude$dilution &
                           replicate == "C" &
-                          duration >=6000 & duration <= 8400) %>%
+                          duration >= 1.66667 & duration <= 1.33333) %>% ## DURATION BUG
             dplyr::pull(OD)
         new_control_value <- mean(ODs_for_new_control)
         #print(new_control_value)

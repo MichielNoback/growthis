@@ -25,6 +25,6 @@ for (i in seq_len(nrow(experiment_data))) {
     assign(exp_name, data)
     do.call(eval(parse(text="usethis::use_data")),
             list(as.name(exp_name), overwrite = TRUE))
-    #print(data)
-    #break
+    print(data)
+    break
 }

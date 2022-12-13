@@ -154,7 +154,7 @@ process_raw_time_point_block <- function(time_point_block, time_point, start_dat
 
     # converts integer interval to duration and adds date of experiment
     time_point_block <- time_point_block %>%
-        dplyr::mutate(duration = lubridate::dhours(time / 60),
+        dplyr::mutate(duration = time/60, #lubridate::dhours(time / 60), #LUBRIDATE Duration CAUSES ERRORS IN HOSTED APP
                       start_date = start_date,
                       #experiment_name = experiment_name
         ) %>%

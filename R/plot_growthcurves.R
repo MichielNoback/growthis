@@ -22,7 +22,7 @@ plot_growthcurves <- function(varioscan_data,
     if (nrow(varioscan_data) == 0) {
         stop("an empty dataset can not be plotted")
     }
-
+    print(varioscan_data)
     controls_plot <- create_controls_plot(
                         filter_data(data = varioscan_data, replicates = "C"))
 
@@ -57,7 +57,7 @@ create_controls_plot <- function(data) {
                                        color = as.factor(dilution))) +
     ggplot2::geom_line() +
     ggplot2::facet_wrap(ggplot2::vars(start_date, series, extract)) +
-    ggplot2::scale_x_time() +
+    #ggplot2::scale_x_time() +
     ggplot2::xlab("Duration (h)") +
     ggplot2::labs(color = "dilution") +
     ggplot2::scale_color_manual(values = get_series_palette()) +
@@ -95,7 +95,7 @@ create_ribbon_plot <- function(data) {
                                           fill = as.factor(dilution)),
                              alpha = 0.3) +
         ggplot2::geom_line(ggplot2::aes(color = as.factor(dilution))) +
-        ggplot2::scale_x_time() +
+        #ggplot2::scale_x_time() +
         ggplot2::scale_color_manual(values = get_series_palette()) +
         ggplot2::scale_fill_manual(values = get_series_palette()) +
         ggplot2::labs(fill = "dilution", color = "dilution") +
@@ -119,7 +119,7 @@ plot_all <- function(data, plt_type) {
                                            color = as.factor(dilution))) +
         ggplot2::geom_line(ggplot2::aes(linetype = replicate)) +
         ggplot2::facet_wrap(ggplot2::vars(start_date, series, extract)) +
-        ggplot2::scale_x_time() +
+        #ggplot2::scale_x_time() +
         #ggplot2::xlab("Duration (h)") +
         ggplot2::labs(color = "dilution") +
         ggplot2::theme_minimal(base_size = 16) +

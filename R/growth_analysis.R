@@ -51,7 +51,7 @@ create_wide_data <- function(varioscan) {
     wide_format <- varioscan %>%
         dplyr::filter(replicate %in% c("1C", "2C", "3C")) %>%
         dplyr::mutate(ID = paste(start_date, series, dilution, replicate, sep = "_"),
-                      time = lubridate::time_length(duration, unit="minutes")) %>% #as.numeric(duration)) %>%
+                      time = duration * 60) %>%  #lubridate::time_length(duration, unit="minutes")) %>% #as.numeric(duration)) %>% # DURATION BUG
         dplyr::select(time, ID, OD) %>%
         tidyr::pivot_wider(names_from = ID, values_from = OD)
     return(wide_format)
