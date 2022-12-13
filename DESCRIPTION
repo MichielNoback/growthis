@@ -29,7 +29,8 @@ Imports:
     magrittr,
     viridis,
     data.table,
-    plotly
+    plotly,
+    shinycssloaders
 Depends: 
     R (>= 2.10)
 LazyData: true

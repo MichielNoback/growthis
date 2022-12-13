@@ -106,8 +106,8 @@ single_growthcurve_box <- shinydashboard::box(
                       choices = c("ribbon", "average", "replicates"),
                       selected = "ribbon",
                       inline = TRUE),
-    shiny::plotOutput(outputId = "growthcurve_plot_single",
-                    width = "1100px", height="700px"),
+    shinycssloaders::withSpinner(shiny::plotOutput(outputId = "growthcurve_plot_single",
+                    width = "1100px", height="700px")),
 #    shinyjs::hidden(div(id = "well_selection_box_wrapper",
                         shiny::tags$style(shiny::HTML('.plate_layout th, .plate_layout td {padding: 4px !important; background-color: floralwhite !important;}')),
                         well_selection_box,
@@ -122,8 +122,8 @@ multi_growthcurve_box <- shinydashboard::box(
                         choices = c("ribbon", "average", "replicates"),
                         selected = "ribbon",
                         inline = TRUE),
-    shiny::plotOutput(outputId = "growthcurve_plot_multiple",
-                      width = "1000px", height="1200px"),
+    shinycssloaders::withSpinner(shiny::plotOutput(outputId = "growthcurve_plot_multiple",
+                      width = "1000px", height="1200px")),
     shiny::br()
 )
 
