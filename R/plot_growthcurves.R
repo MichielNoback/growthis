@@ -22,7 +22,7 @@ plot_growthcurves <- function(varioscan_data,
     if (nrow(varioscan_data) == 0) {
         stop("an empty dataset can not be plotted")
     }
-    print(varioscan_data)
+    #print(varioscan_data)
     controls_plot <- create_controls_plot(
                         filter_data(data = varioscan_data, replicates = "C"))
 
